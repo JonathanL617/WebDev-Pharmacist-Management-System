@@ -1,4 +1,10 @@
+<?php
+    include '../include/conn.php';
+    include '../include/login_function.php';
+?>
+
 <!DOCTYPE html>
+
 <html>
     <head>
         <style>
@@ -14,16 +20,19 @@
                     <h3>Pharmacis Management System</h3>
                     <h5>Login</h5>
                     <form>
+                        <label>Username</label>
+                        <input>Username/ID</input>
+                        
+                        <label>Password</label>
+                        <input>Password</input>
 
+                        <button>Login</button>
                     </form>
-                    <!-- reset password -->
-                    <div>
-                        <a></a>
-                    </div>
-                </div>
-                <!-- forget password -->
-                <div>
 
+                    <!-- forget password -->
+                    <div>
+                        <a href="#">Forget Password?</a>
+                    </div>
                 </div>
             </div>
             <!-- right side -->
