@@ -28,11 +28,6 @@
 
                         <button>Login</button>
                     </form>
-
-                    <!-- forget password -->
-                    <div>
-                        <a href="#">Forget Password?</a>
-                    </div>
                 </div>
             </div>
             <!-- right side -->
