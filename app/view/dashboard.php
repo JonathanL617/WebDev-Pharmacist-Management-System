@@ -1,8 +1,39 @@
 <?php 
-    $_SESSION['username'];
-    $_SESSION['role'];
+    session_start();
+    require_once '../config/config.php';
 
-    $userRole = 'superadmin';
+    /*
+    if(!isset($_SESSION['user_id'])){
+        header('Location: login_page.php');
+        exit();
+    }
+    */
+    $userRole = 'pharmacist';
+
+    $defaultPages = [
+        'superadmin' => 'manage_accounts',
+        'admin' => 'manage_users',
+        'pharmacist' => 'stock_management',
+        'doctor' => 'patient_records'
+    ];
+
+    $validPages = [
+        'superadmin' => ['manage_accounts', 'admin_requests'],
+        'admin' => ['manage_users', 'register_patients', 'account_requests'],
+        'pharmacist' => ['stock_management', 'prescription_requests', 'prescription_queue', 'dispense_history'],
+        'doctor' => ['patient_records', 'prescriptions', 'resupply_requests', 'history']
+    ];
+
+    $page = isset($_GET['page']) ? $_GET['page'] : $defaultPages[$userRole];
+
+    // Validate page and redirect if invalid
+    if (!in_array($page, $validPages[$userRole])) {
+        $page = $defaultPages[$userRole];
+        header("Location: dashboard.php?page=" . $page);
+        exit();
+    }
+
+    $contentFile = __DIR__ . "/pages/{$userRole}/{$page}.php";
 ?>
 <!DOCTYPE html>
 <html>
@@ -14,7 +45,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 
         <!-- css -->
-        <link rel="stylesheet" href="assets/css/dashboard.css">
+        <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/dashboard.css">
     </head>
     <body>
         <!-- navigation bar -->
@@ -23,28 +54,28 @@
                 <!-- switch content of the tabs based on user role -->
                 <?php switch($userRole){
                     case 'superadmin': ?>
-                        <a class="tab" onclick="openTab('manage-accounts', this)">Manage Accounts</a>
-                        <a class="tab" onclick="openTab('admin-requests', this)">Requests</a>
+                        <a class="tab" data-page="manage_accounts" onclick="openTab('manage_accounts', this)">Manage Accounts</a>
+                        <a class="tab" data-page="admin_requests" onclick="openTab('admin_requests', this)">Requests</a>
                     <?php break;
 
                     case 'admin': ?>
-                        <a class="tab" onclick="openTab('manage-users', this)">Manage Users</a>
-                        <a class="tab" onclick="openTab('register-patients', this)">Register Patients</a>
-                        <a class="tab" onclick="openTab('account-requests', this)">Account Requests</a>
+                        <a class="tab" data-page="manage_users" onclick="openTab('manage_users', this)">Manage Users</a>
+                        <a class="tab" data-page="register_patients" onclick="openTab('register_patients', this)">Register Patients</a>
+                        <a class="tab" data-page="account_requests" onclick="openTab('account_requests', this)">Account Requests</a>
                     <?php break;
 
                     case 'pharmacist': ?>
-                        <a class="tab" onclick="openTab('stock-management', this)">Medicine Stock</a>
-                        <a class="tab" onclick="openTab('view-prescription-requests', this)">Prescription Requests</a>
-                        <a class="tab" onclick="openTab('manage-request', this)">Prescription Queue</a>
-                        <a class="tab" onclick="openTab('view-history', this)">Dispense History</a>
+                        <a class="tab" data-page="stock_management" onclick="openTab('stock_management', this)">Medicine Stock</a>
+                        <a class="tab" data-page="prescription_requests" onclick="openTab('prescription_requests', this)">Prescription Requests</a>
+                        <a class="tab" data-page="prescription_queue" onclick="openTab('prescription_queue', this)">Prescription Queue</a>
+                        <a class="tab" data-page="dispense_history" onclick="openTab('dispense_history', this)">Dispense History</a>
                     <?php break;
 
                     case 'doctor': ?>
-                        <a class="tab" onclick="openTab('view-patient-records', this)">Patient Records</a>
-                        <a class="tab" onclick="openTab('view-prescriptions', this)">Prescriptions</a>
-                        <a class="tab" onclick="openTab('manage-resupply-requests', this)">Resupply Requests</a>
-                        <a class="tab" onclick="openTab('view-history', this)">History</a>
+                        <a class="tab" data-page="patient_records" onclick="openTab('patient_records', this)">Patient Records</a>
+                        <a class="tab" data-page="prescriptions" onclick="openTab('prescriptions', this)">Prescriptions</a>
+                        <a class="tab" data-page="resupply_requests" onclick="openTab('resupply_requests', this)">Resupply Requests</a>
+                        <a class="tab" data-page="history" onclick="openTab('history', this)">History</a>
                     <?php break;
                 } ?>
                 
@@ -57,12 +88,27 @@
 
         <!-- content containers -->
         <div class="content-container">
-            
+            <?php
+                if(file_exists($contentFile)){
+                    include $contentFile;
+                }
+                else {
+                    echo "<div class='alert alert-warning'>Page not found: {$contentFile}</div>";
+                }
+            ?>
         </div>
+        <?php
+            echo "<pre>";
+            echo "Current Role: " . $userRole . "\n";
+            echo "Page: " . $page . "\n";
+            echo "Looking for file: " . $contentFile . "\n";
+            echo "File exists: " . (file_exists($contentFile) ? 'Yes' : 'No') . "\n";
+            echo "</pre>";
+        ?>
 
         <!-- scripts -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="assets/js/main.js"></script>
-        <script src="assets/js/admin_management.js"></script>
+        <script src="../../assets/js/main.js"></script>
+        <script src="<?php echo BASE_URL; ?>/assets/js/adminManagement.js"></script>
     </body>
 </html>

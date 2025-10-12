@@ -1,13 +1,16 @@
 <?php
-    // database connection
-    $hostname = "localhost";
-    $username = "root";
-    $password = "";
-    $database = "pharmacy_management_system";
+    require_once 'config.php';
+    
+    try {
+        // database connection
+        $conn = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
-    $conn = mysqli_connect($hostname, $username, $password, $database);
-
-    if(!$conn){
-        die("Connection failed: " . mysqli_connect_error());
+        if(!$conn){
+            die("Connection failed: " . mysqli_connect_error());
+        }
+    }
+    catch(Exception $e){
+        error_log($e->getMessage());
+        exit('Database connection failed. Please try again.');
     }
 ?>

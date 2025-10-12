@@ -1,26 +1,36 @@
 function openTab(tabId, clickedTab){
-    //hide all tab content
-    const tabContent = document.getElementsByClassName('tab-content');
-    for(let content of tabContent){
-        content.style.display = 'none';
-    }
-
-    //remove active class from all tabs
-    const tabs = document.getElementsByClassName('tab');
-    for(let tab of tabs){
-        tab.classList.remove('active');
-    }
-
-    //show selected tab content and activate tab
-    document.getElementById(tabId).style.display = 'block';
-    clickedTab.classList.add('active');
+    //update url with new page
+    window.location.href = `dashboard.php?page=${tabId}`;
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-    const defaultTab = document.querySelector('.tab');
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = urlParams.get('page');
+    const tabs = document.getElementsByClassName('tab');
 
-    if(defaultTab){
-        defaultTab.click();
+    // Default page based on role
+    const roleDefaults = {
+        'superadmin': 'manage_accounts',
+        'admin': 'manage_users',
+        'pharmacist': 'stock_management',
+        'doctor': 'patient_records'
+    };
+
+    const activePage = currentPage || roleDefaults[userRole];
+
+    for (let tab of tabs) {
+        const tabPage = tab.getAttribute('data-page');
+        if (tabPage === activePage) {
+            tab.classList.add('active');
+            break; // Exit loop once active tab is found
+        } else {
+            tab.classList.remove('active');
+        }
+    }
+
+    // Update URL with default page if not present
+    if (!currentPage) {
+        window.history.replaceState({}, document.title, window.location.pathname + '?page=' + activePage);
     }
 });
 

@@ -2,7 +2,7 @@ function createAdminAccount(){
     const form = document.getElementById('createAdminForm');
     const formData = new FormData(form);
 
-    fetch('include/create_admin.php', {
+    fetch('../../app/controller/SuperAdminController.php?action=create', {
         method: 'POST',
         body: formData
     })
@@ -10,18 +10,25 @@ function createAdminAccount(){
     .then(data => {
         if(data.success){
             loadAdminAccounts();
-            $('#CreateAdminModal').modal('hide');
+
+            const modal = document.getElementById('createAdminModal');
+            const bootstrapModal = bootstrap.Modal.getInstance(modal);
+            bootstrapModal.hide();
             form.reset();
         }
         else {
             alert(data.message);
         }
     })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the account');
+    });
 }
 
 
 function loadAdminAccounts(){
-    fetch('include/fetch_admins.php')
+    fetch('../../app/controller/SuperAdminController.php?action=getAdmin')
     .then(response => response.json())
     .then(data => {
         const tableBody = document.getElementById('adminAccountsTable');
@@ -55,7 +62,7 @@ function loadAdminAccounts(){
 }
 
 function toggleAdminStatus(adminId, currentStatus){
-    fetch('include/toggle_admin_status.php', {
+    fetch('../../app/controller/SuperAdminController.php?action=toggleStatus', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
