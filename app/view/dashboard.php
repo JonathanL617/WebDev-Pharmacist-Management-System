@@ -45,6 +45,7 @@
 
         <!-- css -->
         <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/dashboard.css">
+        <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/manage_user.css">
     </head>
     <body>
         <!-- navigation bar -->
