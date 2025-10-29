@@ -80,15 +80,17 @@ function toggleAdminStatus(adminId, currentStatus){
     });
 }
 
-//counter functions
-function updateCounters(){
-    fetch(`{$BASE_URL}/app/controller/SuperAdminController.php`)
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('totalAdmins').textContent       = data.total;
-        document.getElementById('activeAdmins').textContent      = data.active;
-        document.getElementById('inactiveAdmins').textContent    = data.inactive;
-        document.getElementById('registeredByCurrent').textContent = data.registered_by_current;
-    })
-    .catch(err => console.error('Stats error: ', err))
+//counter function
+window.refreshData = function(){
+    function updateCounters(){
+        fetch(`{$BASE_URL}/app/controller/SuperAdminController.php`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalAdmins').textContent       = data.total;
+            document.getElementById('activeAdmins').textContent      = data.active;
+            document.getElementById('inactiveAdmins').textContent    = data.inactive;
+            document.getElementById('registeredByCurrent').textContent = data.registered_by_current;
+        })
+        .catch(err => console.error('Stats error: ', err))
+    }
 }
