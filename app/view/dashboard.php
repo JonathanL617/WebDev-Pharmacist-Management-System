@@ -1,13 +1,14 @@
 <?php 
     session_start();
     require_once '../config/config.php';
-
+    
     if(!isset($_SESSION['user_id'])){
-        header('Location: login_page.php');
+        header('Location:' . BASE_URL . '/app/view/login_page.php');
         exit();
     }
+    
 
-    $userRole = $_SESSION['user_role'] ?? 'pharmacist';
+    $userRole = $_SESSION['user_role'];
 
     $defaultPages = [
         'superadmin' => 'manage_accounts',
@@ -46,6 +47,7 @@
         <!-- css -->
         <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/dashboard.css">
         <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/manage_user.css">
+        <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/manage_accounts.css">
     </head>
     <body>
         <!-- navigation bar -->
@@ -108,7 +110,7 @@
 
         <!-- scripts -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="../../assets/js/main.js"></script>
-        <script src="<?php echo BASE_URL; ?>/assets/js/adminManagement.js"></script>
+        <script src="<?php echo BASE_URL; ?>/assets/js/main.js"></script>
+        <script src="<?php echo BASE_URL; ?>/assets/js/manageAccount.js"></script>
     </body>
 </html>

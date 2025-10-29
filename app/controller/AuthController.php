@@ -1,7 +1,7 @@
 <?php
-include "../config/conn.php";
-include "password_functions.php";
-include "../model/UserModel.php";
+require_once __DIR__ . "/../config/conn.php";
+require_once __DIR__ . "/password_functions.php";
+require_once __DIR__ . "/../model/UserModel.php";
 
 class AuthController {
     private $conn;
@@ -25,22 +25,31 @@ class AuthController {
             $row = $userModel->getUserByEmail($email);
 
             if ($row && isPasswordCorrect($password, $row['user_password'])) {
-                session_start();
+                // Start session if not already started
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
                 session_regenerate_id(true); // Prevent session fixation
 
                 $_SESSION['user_id'] = $row['user_id'];
                 $_SESSION['user_email'] = $row['user_email'];
                 $_SESSION['user_role'] = $row['user_role'];
 
-                // Optional: Handle "Remember Me" with cookies
+                // Handle "Remember Me" with cookies
                 if (isset($_POST['remember'])) {
+                    // Store email only - never store passwords in cookies!
                     setcookie('user_login', $email, time() + (86400 * 30), "/"); // 30 days
-                    setcookie('password', $password, time() + (86400 * 30), "/"); // Note: Store plain text password is insecure; consider token instead
+                } else {
+                    // Clear cookies if remember me is not checked
+                    setcookie('user_login', '', time() - 3600, "/");
                 }
 
-                // Return JSON response instead of redirect
+                // Return JSON response
                 header('Content-Type: application/json');
-                echo json_encode(['status' => 'success', 'redirect' => BASE_URL . '/app/views/dashboard.php']);
+                echo json_encode([
+                    'status' => 'success', 
+                    'redirect' => BASE_URL . '/app/view/dashboard.php?page=' . $this->getDefaultPage($row['user_role'])
+                ]);
                 exit();
             }
             
@@ -53,10 +62,23 @@ class AuthController {
         }
     }
 
+    private function getDefaultPage($role) {
+        $defaultPages = [
+            'superadmin' => 'manage_accounts',
+            'admin' => 'manage_users',
+            'pharmacist' => 'stock_management',
+            'doctor' => 'patient_records'
+        ];
+        
+        return $defaultPages[$role] ?? 'manage_users';
+    }
+
     public function logout() {
-        session_start(); // Ensure session is started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         session_destroy();
-        header("Location: " . BASE_URL . '/app/views/login_page.php');
+        header("Location: " . BASE_URL . '/app/view/login_page.php');
         exit();
     }
 
@@ -84,7 +106,7 @@ class AuthController {
 
             if ($user) {
                 $hashedPassword = hashPassword($newPassword);
-                if ($userModel->updatePassword($email, $hashedPassword)) {
+                if ($userModel->updatePassword($email, $hashedPassword, $user['user_table'])) {
                     return true; // Success
                 } else {
                     throw new Exception('Password reset failed. Please try again.');
@@ -96,5 +118,11 @@ class AuthController {
             throw $e;
         }
     }
+}
+
+// Handle login request if this file is accessed directly
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
+    $auth = new AuthController($conn);
+    $auth->login($_POST['email'], $_POST['password']);
 }
 ?>
