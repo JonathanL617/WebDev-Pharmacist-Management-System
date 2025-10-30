@@ -68,7 +68,7 @@
                 <i class="bi bi-upload"></i> Export
             </button>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAdminModal">
-                <i class="bi bi-plus-circle"></i> Add User
+                <i class="bi bi-plus-circle"></i> Add Admin
             </button>
         </div>
     </div>
@@ -123,7 +123,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="regitered-by">Registered By</label>
-                        <input type="text" class="form-control" id="" name="registered-by" required>
+                        <input type="text" class="form-control" id="" name="registered-by" 
+                         value="<?php echo htmlspecialchars($_SESSION['user_email'] ?? '')?>" readonly>
                     </div>
                 </form>
             </div>

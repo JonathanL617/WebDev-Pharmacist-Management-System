@@ -83,7 +83,7 @@ function toggleAdminStatus(adminId, currentStatus){
 //counter function
 window.refreshData = function(){
     function updateCounters(){
-        fetch(`{$BASE_URL}/app/controller/SuperAdminController.php`)
+        fetch(`../../app/controller/SuperAdminController.php`)
         .then(response => response.json())
         .then(data => {
             document.getElementById('totalAdmins').textContent       = data.total;

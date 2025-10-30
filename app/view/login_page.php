@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
                 <!-- Error message placeholder (hidden by default) -->
                 <div id="login-error" style="display:none;"></div>
                 
-                <form id="login-form" method="POST" action="<?php echo BASE_URL; ?>/app/controller/AuthController.php">
+                <form id="login-form" action="app/controller/AuthController.php" method="POST" name="login">
                     <input type="email" name="email" placeholder="Email" required value="<?php echo isset($_COOKIE['user_login']) ? htmlspecialchars($_COOKIE['user_login']) : ''; ?>">
                     
                     <input type="password" name="password" placeholder="Password" required>

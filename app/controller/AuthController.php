@@ -44,20 +44,20 @@ class AuthController {
                     setcookie('user_login', '', time() - 3600, "/");
                 }
 
-                // Return JSON response
-                header('Content-Type: application/json');
-                echo json_encode([
-                    'status' => 'success', 
-                    'redirect' => BASE_URL . '/app/view/dashboard.php?page=' . $this->getDefaultPage($row['user_role'])
-                ]);
+                $redirectUrl = BASE_URL . "/app/view/dashboard.php?page=" . $this->getDefaultPage($row['user_role']);
+
+                header("Location: $redirectUrl");
                 exit();
             }
             
             throw new Exception('Invalid email or password');
         } 
         catch(Exception $e){
-            header('Content-Type: application/json');
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            $_SESSION['login_error'] = $e->getMessage();
+            header("Location: " . BASE_URL . "/app/view/login_page.php");
             exit();
         }
     }
