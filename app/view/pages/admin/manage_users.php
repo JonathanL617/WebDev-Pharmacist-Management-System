@@ -1,162 +1,230 @@
 <div class="tab-content" id="manage-users">
-    <h3>Manage Users</h3>
-    <div class="row mb-4">
-        <!-- search bar -->
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search text-muted"></i>
-                </span>
-                <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search">
-            </div>
-        </div>
+</div>
 
-        <!-- filters -->
-        <div class="col-lg-2 col-md-3 mb-3">
-            <select id="filter-role" class="form-select">
-                <option value="">All Roles</option>
-                <option value="doctor">Doctor</option>
-                <option value="pharmacist">Pharmacist</option>
-            </select>
-        </div>
 
-        <div class="col-lg-2 col-md-3 mb-3">
-            <select id="filter-status" class="form-select">
-                <option value="">All</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="blocked">Blocked</option>
-            </select>
-        </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Users</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="/assets/css/manage_users.css">
+</head>
+<body>
+    <div class="container my-5">
+        <div class="tab-content" id="manage-users">
+            <h1 class="mb-4">Admin - Manage Users</h1>
 
-        <div class="col-lg-2 col-md-3 mb-3">
-            <select id="filter-date" class="form-select">
-                <option value="">All</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-            </select>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-3 text-lg-end">
-            <button id="exportBtn" class="btn btn-outline-secondary me-2">
-                <i class="bi bi-upload"></i> Export
-            </button>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                <i class="bi bi-plus-circle"></i> Add User
-            </button>
-        </div>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-hover align-middle" id="usersTable">
-            <thead class="table-light">
-                <tr>
-                    <th width="5%"><input type="checkbox" id="selectAll"></th>
-                    <th width="15%">Full Name</th>
-                    <th width="20%">Email</th>
-                    <th width="12%">Username</th>
-                    <th width="10%">Status</th>
-                    <th width="10%">Role</th>
-                    <th width="13%">Joined Date</th>
-                    <th width="10%">Last Active</th>
-                    <th width="5%">Actions</th>
-                </tr>
-            </thead>
-            <tbody id="usersTableBody">
-                <!-- Dynamic content -->
-            </tbody>
-        </table>
-    </div>
-
-    <!-- pagination -->
-    <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap">
-        <div class="d-flex align-items-center mb-3 mb-md-0">
-            <span class="me-2 text-muted">Rows per page</span>
-            <select id="rowsPerPage" class="form-select form-select-sm w-auto me-3">
-                <option value="10">10</option>
-                <option value="25">25</option>
-            </select>
-            <span class="text-muted">of <strong id="totalRows"><?php //echo $totalRow ?></strong> rows</span>
-        </div>
-        
-        <nav>
-            <!-- need to make dynamic paging -->
-            <ul class="pagination pagination-sm mb-0">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#"><i class="bi bi-chevron-double-left"></i></a>
+            <!-- Tabs for Staff and Patients -->
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#manage-staff">Manage Staff</a>
                 </li>
-                <li class="page-item">
-                    <a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a>
-                </li>
-                <li class="page-item active">
-                    <a class="page-link" href="#">1</a>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item disabled">
-                    <span class="page-link">...</span>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">10</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="#"><i class="bi bi-chevron-double-right"></i></a>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#manage-patients">Manage Patients</a>
                 </li>
             </ul>
-        </nav>
-    </div>
-</div>
 
-<!-- create user modal -->
-<div class="modal fade" id="addUserModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-header">
-            <h5 class="modal-title">Add New User</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-            <form id="addUserForm">
-                <div class="mb-3">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" class="form-control" name="full_name" required>
+            <!-- Staff Tab -->
+            <div class="tab-pane fade show active" id="manage-staff">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Staff List</h5>
+                        <div>
+                            <input type="text" class="form-control" id="staffSearch" placeholder="Search staff by name or ID">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Staff ID</th>
+                                        <th>Name</th>
+                                        <th>Date of Birth</th>
+                                        <th>Specialization</th>
+                                        <th>Role</th>
+                                        <th>Phone</th>
+                                        <th>Email</th>
+                                        <th>Registered By</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staffTable">
+                                    <tr>
+                                        <td colspan="10" class="text-center text-muted">Loading staff...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" name="email" required>
+            </div>
+
+            <!-- Patients Tab -->
+            <div class="tab-pane fade" id="manage-patients">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Patient List</h5>
+                        <div>
+                            <input type="text" class="form-control" id="patientSearch" placeholder="Search patients by name or ID">
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Patient ID</th>
+                                        <th>Name</th>
+                                        <th>Date of Birth</th>
+                                        <th>Phone</th>
+                                        <th>Gender</th>
+                                        <th>Email</th>
+                                        <th>Address</th>
+                                        <th>Registered By</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="patientTable">
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted">Loading patients...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Phone No.</label>
-                    <input type="text" class="form-control" name="phone" required>
+            </div>
+
+            <!-- Staff Edit Modal -->
+            <div class="modal fade" id="editStaffModal" tabindex="-1" aria-labelledby="editStaffModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editStaffModalLabel">Edit Staff</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editStaffForm">
+                                <div class="mb-3">
+                                    <label for="edit_staff_id" class="form-label">Staff ID</label>
+                                    <input type="text" class="form-control" id="edit_staff_id" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_staff_name" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="edit_staff_name" maxlength="100" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_staff_dob" class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" id="edit_staff_dob" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_staff_specialization" class="form-label">Specialization</label>
+                                    <input type="text" class="form-control" id="edit_staff_specialization" maxlength="100" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_staff_role" class="form-label">Role</label>
+                                    <select class="form-select" id="edit_staff_role" required>
+                                        <option value="" disabled selected>Select Role</option>
+                                        <option value="doctor">Doctor</option>
+                                        <option value="pharmacist">Pharmacist</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_staff_phone" class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" id="edit_staff_phone" maxlength="15" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_staff_email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="edit_staff_email" maxlength="100" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_staff_registered_by" class="form-label">Registered By</label>
+                                    <input type="text" class="form-control" id="edit_staff_registered_by" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_staff_status" class="form-label">Status</label>
+                                    <select class="form-select" id="edit_staff_status" required>
+                                        <option value="" disabled selected>Select Status</option>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="blocked">Blocked</option>
+                                    </select>
+                                </div>
+                                <div id="staffFormErrors" class="text-danger mb-3" style="display: none;"></div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Date of Birth</label>
-                    <input type="date" class="form-control" name="dob" required>
+            </div>
+
+            <!-- Patient Edit Modal -->
+            <div class="modal fade" id="editPatientModal" tabindex="-1" aria-labelledby="editPatientModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editPatientModalLabel">Edit Patient</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editPatientForm">
+                                <div class="mb-3">
+                                    <label for="edit_patient_id" class="form-label">Patient ID</label>
+                                    <input type="text" class="form-control" id="edit_patient_id" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_patient_name" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="edit_patient_name" maxlength="100" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_patient_dob" class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" id="edit_patient_dob" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_patient_phone" class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" id="edit_patient_phone" maxlength="15" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_patient_gender" class="form-label">Gender</label>
+                                    <select class="form-select" id="edit_patient_gender" required>
+                                        <option value="" disabled selected>Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_patient_email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="edit_patient_email" maxlength="100" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_patient_address" class="form-label">Address</label>
+                                    <textarea class="form-control" id="edit_patient_address" rows="3" maxlength="255" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_patient_registered_by" class="form-label">Registered By</label>
+                                    <input type="text" class="form-control" id="edit_patient_registered_by" readonly>
+                                </div>
+                                <div id="patientFormErrors" class="text-danger mb-3" style="display: none;"></div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Role</label>
-                    <select class="form-select" name="role">
-                        <option value="Doctor">Doctor</option>
-                        <option value="Pharmacist">Pharmacist</option>
-                        <option value="User">User</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Acc. Status</label>
-                    <input type="text" class="form-control" name="acc-status" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Registered By</label>
-                    <input type="text" class="form-control" name="registered-by" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-control" name="password" required>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary" onclick="addUser()">Add User</button>
+            </div>
         </div>
     </div>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="/assets/js/manage_users.js"></script>
+</body>
+</html>
