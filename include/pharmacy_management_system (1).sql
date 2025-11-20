@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Nov 20, 2025 at 03:39 AM
+-- Generation Time: Nov 20, 2025 at 03:59 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.3.14
 
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `admin` (
   `admin_password` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `admin_email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `registered_by` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `admin_login_status` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `admin_login_status` enum('active','inactive') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`admin_id`),
   KEY `registered_by` (`registered_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
