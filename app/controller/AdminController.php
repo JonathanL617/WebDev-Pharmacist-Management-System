@@ -120,6 +120,74 @@ class AdminController {
         $success = $stmt->execute();
         echo json_encode(['success' => $success]);
     }
+    public function generateStaffId() {
+        $role = $_GET['role'] ?? '';
+        $prefix = ($role === 'doctor') ? 'D' : (($role === 'pharmacist') ? 'P' : 'S');
+        
+        $sql = "SELECT staff_id FROM staff WHERE staff_id LIKE ? ORDER BY staff_id DESC LIMIT 1";
+        $stmt = $this->conn->prepare($sql);
+        $likeParam = $prefix . '%';
+        $stmt->bind_param('s', $likeParam);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result && $result->num_rows > 0) {
+            $lastID = $result->fetch_assoc()['staff_id'];
+            $num = (int)substr($lastID, 1) + 1;
+            $newID = $prefix . str_pad($num, 3, '0', STR_PAD_LEFT);
+        } else {
+            $newID = $prefix . '001';
+        }
+        echo json_encode(['id' => $newID]);
+    }
+
+    public function createStaffRequest() {
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        // Basic validation
+        if (empty($data['staff_id']) || empty($data['staff_email'])) {
+            echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+            return;
+        }
+
+        // Check for duplicates
+        $check = $this->conn->prepare("SELECT staff_id FROM staff WHERE staff_email = ?");
+        $check->bind_param('s', $data['staff_email']);
+        $check->execute();
+        if ($check->get_result()->num_rows > 0) {
+            echo json_encode(['success' => false, 'message' => 'Email already exists']);
+            return;
+        }
+
+        // Insert with Pending status
+        // Note: Password is not set here, it will be set by the user upon first login or by superadmin? 
+        // For now, let's assume a default password or handle it later. 
+        // Actually, the form doesn't have password. Let's set a default one or leave it empty if allowed.
+        // Looking at previous code, password is required. Let's set a default 'password123' hashed.
+        $defaultPass = password_hash('password123', PASSWORD_DEFAULT);
+        $status = 'Pending';
+
+        $stmt = $this->conn->prepare("INSERT INTO staff (staff_id, staff_name, staff_dob, staff_specialization, staff_role, staff_phone, staff_email, staff_status, staff_password, registered_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        
+        $stmt->bind_param('ssssssssss', 
+            $data['staff_id'],
+            $data['staff_name'],
+            $data['staff_dob'],
+            $data['staff_specialization'],
+            $data['staff_role'],
+            $data['staff_phone'],
+            $data['staff_email'],
+            $status,
+            $defaultPass,
+            $data['registered_by']
+        );
+        
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => $stmt->error]);
+        }
+    }
 }
 
 // Router
@@ -137,6 +205,8 @@ match ($action) {
     'updatePatient' => $controller->updatePatient(),
     'generatePatientId' => $controller->generatePatientId(),
     'registerPatient' => $controller->registerPatient(),
+    'generateStaffId' => $controller->generateStaffId(),
+    'createStaffRequest' => $controller->createStaffRequest(),
     default => (function() { echo json_encode(['error' => 'Invalid action']); })()
 };
 ?>

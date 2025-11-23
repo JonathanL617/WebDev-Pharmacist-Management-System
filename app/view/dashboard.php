@@ -11,7 +11,7 @@
     */
     
 
-    $userRole = $_SESSION['user_role'] ?? 'admin'; // Default to pharmacist if not set for testing
+    $userRole = $_SESSION['user_role'] ?? 'superadmin'; // Default to pharmacist if not set for testing
     
     $defaultPages = [
         'superadmin' => 'manage_accounts',

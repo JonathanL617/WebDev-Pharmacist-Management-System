@@ -38,6 +38,21 @@
             $success = $this->model->toggleStatus($input['adminId'], $input['status']);
             echo json_encode(['success' => $success]);
         }
+
+        public function getRequests() {
+            echo json_encode($this->model->getPendingStaff());
+        }
+
+        public function handleRequest() {
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (empty($input['staffId']) || empty($input['status'])) {
+                echo json_encode(['success' => false, 'message' => 'Missing parameters']);
+                return;
+            }
+            
+            $success = $this->model->updateStaffStatus($input['staffId'], $input['status']);
+            echo json_encode(['success' => $success]);
+        }
     }
 
     //router
@@ -51,6 +66,8 @@
         'create'        => $controller->createAdmin(),
         'toggleStatus'  => $controller->toggleStatus(),
         'delete'        => $controller->deleteAdmin(),
+        'getRequests'   => $controller->getRequests(),
+        'handleRequest' => $controller->handleRequest(),
         default         => $controller->getStats()
     };
 ?>

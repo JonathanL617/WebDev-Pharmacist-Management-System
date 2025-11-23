@@ -110,5 +110,31 @@
 
             return $success;
         }
+
+        // Staff Request Management
+        public function getPendingStaff() {
+            $sql = "SELECT s.*, a.admin_username as requester_name 
+                    FROM staff s 
+                    LEFT JOIN admin a ON s.registered_by = a.admin_id 
+                    WHERE s.staff_status = 'Pending' 
+                    ORDER BY s.staff_id DESC";
+            
+            $result = $this->conn->query($sql);
+            return $result->fetch_all(MYSQLI_ASSOC);
+        }
+
+        public function updateStaffStatus($staffId, $status) {
+            // Allowed statuses
+            if (!in_array($status, ['Active', 'Rejected'])) {
+                return false;
+            }
+
+            $stmt = $this->conn->prepare("UPDATE staff SET staff_status = ? WHERE staff_id = ?");
+            $stmt->bind_param('ss', $status, $staffId);
+            $success = $stmt->execute();
+            $stmt->close();
+
+            return $success;
+        }
     }
 ?>
