@@ -79,10 +79,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
                     <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
                 <?php endif; ?>
                 
-                <!-- Error message placeholder (hidden by default) -->
-                <div id="login-error" style="display:none;"></div>
+                <?php if ($error && $showCard === 'login'): ?>
+                    <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+                <?php endif; ?>
                 
-                <form id="login-form" action="app/controller/AuthController.php" method="POST" name="login">
+                <form id="login-form" action="" method="POST" name="login">
                     <input type="email" name="email" placeholder="Email" required value="<?php echo isset($_COOKIE['user_login']) ? htmlspecialchars($_COOKIE['user_login']) : ''; ?>">
                     
                     <input type="password" name="password" placeholder="Password" required>

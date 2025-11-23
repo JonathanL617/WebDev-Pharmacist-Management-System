@@ -125,4 +125,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $auth = new AuthController($conn);
     $auth->login($_POST['email'], $_POST['password']);
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
+    $auth = new AuthController($conn);
+    $auth->logout();
+}
+
 ?>

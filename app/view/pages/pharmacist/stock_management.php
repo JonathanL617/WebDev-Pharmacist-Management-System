@@ -1,131 +1,102 @@
-<?php 
-require_once __DIR__ . '/../../../config/config.php';
-require_once __DIR__ . '/../../../controller/PharmacistController.php';
-?>
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Medicine Info</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>/view/pages/pharmacist/assets/css/stock_management.css">
-</head>
-<body>
-
-<div class="container my-5">
-<h2 class="mb-4">Medicine Information</h2>
-
-<!-- Search Form -->
-<form method="get" action="dashboard.php" class="mb-3 row g-2">
-    <div class="col-auto">
-        <input type="text" class="form-control" name="search" placeholder="Search by ID or Name"
-               value="<?php echo htmlspecialchars($search); ?>">
+<!-- pharmacist stock management -->
+<div class="tab-content" id="stock-management">
+    <!-- stat counters -->
+    <br>
+    <div class="stats-container mb-4">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-capsule"></i></div>
+            <p class="stat-label">Total Medicines</p>
+            <div class="stat-value" id="totalMedicines">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <p class="stat-label">Low Stock Items</p>
+            <div class="stat-value" id="lowStockItems">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-x-circle-fill"></i></div>
+            <p class="stat-label">Out of Stock</p>
+            <div class="stat-value" id="outOfStock">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-currency-dollar"></i></div>
+            <p class="stat-label">Total Value</p>
+            <div class="stat-value" id="totalValue">$0</div>
+        </div>
     </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-custom">Search</button>
-        <a href="dashboard.php" class="btn btn-secondary">Reset</a>
+    <h2>Medicine Information</h2>
+
+    <!-- Search and Add Medicine -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search by ID or Name">
+            </div>
+        </div>
+        <div class="col-lg-9 col-md-6 mb-3 text-lg-end">
+            <button class="btn btn-primary" onclick="openAddModal()">
+                <i class="bi bi-plus-circle"></i> Add Medicine
+            </button>
+        </div>
     </div>
-</form>
 
-
-<!-- Add Medicine Button -->
-<button class="btn btn-custom mb-3" data-bs-toggle="modal" data-bs-target="#addModal">Add Medicine</button>
-
-<!-- Table -->
-<table class="table table-bordered table-striped">
-<thead class="table-dark">
-<tr>
-<th>ID</th><th>Name</th><th>Price</th><th>Quantity</th><th>Description</th><th>Actions</th>
-</tr>
-</thead>
-<tbody>
-
-<?php while ($medicine = $medicines->fetch_assoc()): ?>
-<tr>
-<td><?php echo $medicine['medicine_id']; ?></td>
-<td><?php echo $medicine['medicine_name']; ?></td>
-<td><?php echo $medicine['medicine_price']; ?></td>
-<td><?php echo $medicine['medicine_quantity']; ?></td>
-<td><?php echo $medicine['medicine_description']; ?></td>
-<td>
-<button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-        data-bs-target="#editModal<?php echo $medicine['medicine_id']; ?>">Edit</button>
-
-<a href="<?php echo BASE_URL; ?>/app/controller/PharmacistController.php?delete=<?php echo $medicine['medicine_id']; ?>"
-   class="btn btn-sm btn-danger" onclick="return confirm('Delete this medicine?')">Delete</a>
-
-</td>
-</tr>
-
-
-<!-- Edit Modal -->
-<div class="modal fade" id="editModal<?php echo $medicine['medicine_id']; ?>" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <form method="post" action="<?php echo BASE_URL; ?>/app/controller/PharmacistController.php">
-    <input type="hidden" name="medicine_id" value="<?php echo $medicine['medicine_id']; ?>">
-    <input type="hidden" name="redirect" value="<?php echo $_SERVER['REQUEST_URI']; ?>">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Edit Medicine <?php echo $medicine['medicine_id']; ?></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label>Medicine Name</label>
-          <input type="text" class="form-control" name="medicine_name" value="<?php echo $medicine['medicine_name']; ?>" required>
-        </div>
-        <div class="mb-3">
-          <label>Price</label>
-          <input type="number" step="0.01" class="form-control" name="medicine_price" value="<?php echo $medicine['medicine_price']; ?>" required>
-        </div>
-        <div class="mb-3">
-          <label>Quantity</label>
-          <input type="number" class="form-control" name="medicine_quantity" value="<?php echo $medicine['medicine_quantity']; ?>" required>
-        </div>
-        <div class="mb-3">
-          <label>Description</label>
-          <input type="text" class="form-control" name="medicine_description" value="<?php echo $medicine['medicine_description']; ?>">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="submit" name="update" class="btn btn-custom">Update</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-      </div>
+    <!-- Medicine Table -->
+    <div class="responsive-table">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="medicinesTable">
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Loading medicines...</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    </form>
-  </div>
+
+    <!-- Add/Edit Medicine Modal -->
+    <div class="modal fade" id="medicineModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="medicineForm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="medicineModalLabel">Add Medicine</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label>Name</label>
+                            <input type="text" class="form-control" id="medicine_name" name="medicine_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Price</label>
+                            <input type="number" step="0.01" class="form-control" id="medicine_price" name="medicine_price" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Quantity</label>
+                            <input type="number" class="form-control" id="medicine_quantity" name="medicine_quantity" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Description</label>
+                            <input type="text" class="form-control" id="medicine_description" name="medicine_description">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="saveMedicine()">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
-<?php endwhile; ?>
-
-</tbody>
-</table>
-</div>
-
-<!-- Add Modal -->
-<div class="modal fade" id="addModal" tabindex="-1">
-  <div class="modal-dialog">
-    <form method="post" action="<?php echo BASE_URL; ?>/app/controller/PharmacistController.php" ...>
-    <div class="modal-content">
-      <div class="modal-header"><h5 class="modal-title">Add Medicine</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-      <div class="modal-body">
-        <div class="mb-3"><label>Name</label><input type="text" class="form-control" name="medicine_name" required></div>
-        <div class="mb-3"><label>Price</label><input type="number" step="0.01" class="form-control" name="medicine_price" required></div>
-        <div class="mb-3"><label>Quantity</label><input type="number" class="form-control" name="medicine_quantity" required></div>
-        <div class="mb-3"><label>Description</label><input type="text" class="form-control" name="medicine_description"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="submit" name="add" class="btn btn-custom">Add</button>
-      </div>
-    </div>
-    </form>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?php echo BASE_URL; ?>/view/pages/pharmacist/assets/js/pharmacist_stock_management.js"></script>
-</body>
-</html>

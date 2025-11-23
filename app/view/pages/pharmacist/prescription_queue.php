@@ -1,16 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Prescription Queue</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
+<!-- pharmacist prescription queue -->
+<div class="tab-content" id="prescription-queue">
+    <?php
+    
+    $loggedInUser = $_SESSION['user_id'] ?? 'P001'; // fallback
+    ?>
+    <script>
+        const loggedInUserId = "<?= $loggedInUser ?>";
+    </script>
 
+    <!-- stat counters -->
+    <br>
+    <div class="stats-container mb-4">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-file-earmark-medical-fill"></i></div>
+            <p class="stat-label">Total Orders</p>
+            <div class="stat-value" id="totalOrders">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-clock-fill"></i></div>
+            <p class="stat-label">Pending</p>
+            <div class="stat-value" id="pendingOrders">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <p class="stat-label">Approved</p>
+            <div class="stat-value" id="approvedOrders">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-check-all"></i></div>
+            <p class="stat-label">Done</p>
+            <div class="stat-value" id="doneOrders">0</div>
+        </div>
+    </div>
+    <h2>Incoming Pharmacy Orders</h2>
 
-<div class="container my-5">
-    <h3>Incoming Pharmacy Orders</h3>
-
+    <!-- Filter Buttons -->
     <div class="mb-3">
         <button class="btn btn-secondary btn-sm" onclick="loadOrders()">All</button>
         <button class="btn btn-success btn-sm" onclick="loadOrders('Approved')">Approved</button>
@@ -19,21 +43,26 @@
         <button class="btn btn-info btn-sm text-dark" onclick="loadOrders('Done')">Done</button>
     </div>
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Order ID</th>
-                <th>Date</th>
-                <th>Patient</th>
-                <th>Doctor</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="ordersTable">
-            <tr><td colspan="6" class="text-center">Loading...</td></tr>
-        </tbody>
-    </table>
+    <!-- Orders Table -->
+    <div class="responsive-table">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="ordersTable">
+                <tr>
+                    <td colspan="6" class="text-center">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     <!-- View Modal -->
     <div class="modal fade" id="viewModal">

@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch and populate tables
     function loadTables() {
         // Fetch staff data
-        fetch('/api/staff')
+        fetch('../../app/controller/AdminController.php?action=getStaff')
             .then(response => {
                 if (!response.ok) throw new Error('Failed to fetch staff');
                 return response.json();
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
         // Fetch patient data
-        fetch('/api/patients')
+        fetch('../../app/controller/AdminController.php?action=getPatients')
             .then(response => {
                 if (!response.ok) throw new Error('Failed to fetch patients');
                 return response.json();
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const modal = e.target.getAttribute('data-bs-target');
 
             if (modal === '#editStaffModal') {
-                fetch(`/api/staff/${id}`)
+                fetch(`../../app/controller/AdminController.php?action=getStaffById&id=${id}`)
                     .then(response => {
                         if (!response.ok) throw new Error('Failed to fetch staff');
                         return response.json();
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         staffFormErrors.innerHTML = 'Error loading staff data: ' + error.message;
                     });
             } else if (modal === '#editPatientModal') {
-                fetch(`/api/patients/${id}`)
+                fetch(`../../app/controller/AdminController.php?action=getPatientById&id=${id}`)
                     .then(response => {
                         if (!response.ok) throw new Error('Failed to fetch patient');
                         return response.json();
@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!emailPattern.test(staffEmail)) {
             errors.push('Invalid email format.');
         }
-        if (!['active', 'inactive', 'blocked'].includes(staffStatus)) {
+        if (!['active', 'inactive', 'block'].includes(staffStatus)) {
             errors.push('Please select a valid status.');
         }
 
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        fetch('/api/staff/update', {
+        fetch('../../app/controller/AdminController.php?action=updateStaff', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -241,20 +241,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 staff_status: staffStatus
             })
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to update staff');
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) throw new Error(data.error);
-            alert('Staff updated successfully.');
-            bootstrap.Modal.getInstance(document.getElementById('editStaffModal')).hide();
-            loadTables();
-        })
-        .catch(error => {
-            staffFormErrors.style.display = 'block';
-            staffFormErrors.innerHTML = 'Error updating staff: ' + error.message;
-        });
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to update staff');
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                alert('Staff updated successfully.');
+                bootstrap.Modal.getInstance(document.getElementById('editStaffModal')).hide();
+                loadTables();
+            })
+            .catch(error => {
+                staffFormErrors.style.display = 'block';
+                staffFormErrors.innerHTML = 'Error updating staff: ' + error.message;
+            });
     });
 
     // Validate and submit Patient form
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        fetch('/api/patients/update', {
+        fetch('../../app/controller/AdminController.php?action=updatePatient', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -307,20 +307,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 patient_address: patientAddress
             })
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to update patient');
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) throw new Error(data.error);
-            alert('Patient updated successfully.');
-            bootstrap.Modal.getInstance(document.getElementById('editPatientModal')).hide();
-            loadTables();
-        })
-        .catch(error => {
-            patientFormErrors.style.display = 'block';
-            patientFormErrors.innerHTML = 'Error updating patient: ' + error.message;
-        });
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to update patient');
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                alert('Patient updated successfully.');
+                bootstrap.Modal.getInstance(document.getElementById('editPatientModal')).hide();
+                loadTables();
+            })
+            .catch(error => {
+                patientFormErrors.style.display = 'block';
+                patientFormErrors.innerHTML = 'Error updating patient: ' + error.message;
+            });
     });
 
     // Initialize tables

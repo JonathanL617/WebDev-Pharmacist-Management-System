@@ -1,211 +1,99 @@
-<?php require_once __DIR__ . '/../../../config/config.php'; ?>
-
-<div class="container py-4">
-    <h2 class="mb-4 text-primary fw-bold">Patient Order History</h2>
+<!-- doctor patient records -->
+<div class="tab-content" id="patient-records">
+    <!-- stat counters -->
+    <br>
+    <div class="stats-container mb-4">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            <p class="stat-label">Total Patients</p>
+            <div class="stat-value" id="totalPatients">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-file-medical-fill"></i></div>
+            <p class="stat-label">Recent Consultations</p>
+            <div class="stat-value" id="recentConsultations">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-prescription2"></i></div>
+            <p class="stat-label">Pending Prescriptions</p>
+            <div class="stat-value" id="pendingPrescriptions">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-calendar-day"></i></div>
+            <p class="stat-label">Today's Appointments</p>
+            <div class="stat-value" id="todayAppointments">0</div>
+        </div>
+    </div>
+    <h2>Patient Orders</h2>
 
     <!-- Search -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <input type="text" class="form-control form-control-lg" id="searchPatient" placeholder="Search by Patient ID or Name...">
-        </div>
-    </div>
-
-    <!-- Patients List -->
-    <div class="card shadow" id="patientsCard">
-        <div class="card-header bg-primary text-white fs-5">All Patients</div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>DOB</th>
-                            <th>Phone</th>
-                            <th>Gender</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="patientsTableBody">
-                        <tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>
-                    </tbody>
-                </table>
+    <div class="row mb-4">
+        <div class="col-lg-8 col-md-6 mb-3">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" class="form-control border-start-0 ps-0" id="searchPatient" placeholder="Search by Patient ID...">
             </div>
         </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <button class="btn btn-outline-secondary w-100" id="clearSearch">Clear</button>
+        </div>
     </div>
 
-    <!-- Order History Section -->
-    <div id="orderHistorySection" style="display:none;">
-        <div class="card bg-primary text-white mb-4 shadow">
+    <!-- Patients Table -->
+    <div class="responsive-table" id="patientsCard">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>DOB</th>
+                    <th>Phone</th>
+                    <th>Gender</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="patientsTableBody">
+                <tr>
+                    <td colspan="6" class="text-center py-4">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Order History Section (hidden by default) -->
+    <section id="orderHistorySection" class="mt-4" style="display:none;">
+        <div class="card bg-primary text-white mb-4">
             <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
-                    <h4 id="bannerPatientName" class="mb-0"></h4>
-                    <p id="bannerPatientId" class="mb-0 opacity-75"></p>
+                    <h4 id="bannerPatientName">-</h4>
+                    <p id="bannerPatientId" class="mb-0">Patient ID: -</p>
                 </div>
-                <button class="btn btn-light" id="backToPatients">Back to List</button>
+                <button class="btn btn-light" id="backToPatients">Back</button>
             </div>
         </div>
 
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-light">Patient Details</div>
+        <div class="card mb-4">
+            <div class="card-header">Patient Info</div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6"><strong>DOB:</strong> <span id="detailDob">-</span></div>
-                    <div class="col-md-6"><strong>Phone:</strong> <span id="detailPhone">-</span></div>
-                    <div class="col-md-6"><strong>Gender:</strong> <span id="detailGender">-</span></div>
-                    <div class="col-md-6"><strong>Email:</strong> <span id="detailEmail">-</span></div>
-                    <div class="col-md-12"><strong>Address:</strong> <span id="detailAddress">-</span></div>
+                    <div class="col-md-6">
+                        <p><strong>DOB:</strong> <span id="detailDob">-</span></p>
+                        <p><strong>Phone:</strong> <span id="detailPhone">-</span></p>
+                        <p><strong>Gender:</strong> <span id="detailGender">-</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Email:</strong> <span id="detailEmail">-</span></p>
+                        <p><strong>Address:</strong> <span id="detailAddress">-</span></p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card shadow">
-            <div class="card-header bg-light">Order History</div>
-            <div class="card-body" id="ordersContainer">
-                <p class="text-center text-muted">Loading orders...</p>
-            </div>
+        <div class="card">
+            <div class="card-header">Order History</div>
+            <div class="card-body" id="ordersContainer"></div>
         </div>
-    </div>
+    </section>
 </div>
-
-<!-- FINAL WORKING SCRIPT — 100% GUARANTEED -->
-<script>
-    window.BASE_URL = "/WebDev-Pharmacist-Management-System/";
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const tbody = document.getElementById("patientsTableBody");
-    const searchInput =  document.getElementById("searchPatient");
-    const orderSection = document.getElementById("orderHistorySection");
-    const patientsCard = document.getElementById("patientsCard");
-    const backBtn = document.getElementById("backToPatients");
-
-    const API_URL = window.BASE_URL + "app/controller/DoctorController2.php";
-    let allPatients = [];
-
-    function formatDate(dateStr) {
-        if (!dateStr || dateStr === '0000-00-00') return '-';
-        return new Date(dateStr).toLocaleDateString('en-GB');
-    }
-
-    function renderPatients(data) {
-        tbody.innerHTML = "";
-        if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No patients found</td></tr>`;
-            return;
-        }
-        data.forEach(p => {
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${p.patient_id}</strong></td>
-                    <td>${p.patient_name}</td>
-                    <td>${formatDate(p.patient_date_of_birth)}</td>
-                    <td>${p.patient_phone || '-'}</td>
-                    <td>${p.patient_gender || '-'}</td>
-                    <td>
-                        <button class="btn btn-primary btn-sm" onclick="viewPatientOrders('${p.patient_id}', '${p.patient_name}')">
-                            View Orders
-                        </button>
-                    </td>
-                </tr>`;
-        });
-    }
-
-    async function loadPatients() {
-        try {
-            const res = await fetch(API_URL + "?action=patients");
-            const json = await res.json();
-
-            if (json.status === "success") {
-                allPatients = json.data;
-                renderPatients(allPatients);
-            } else {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-danger text-center">Failed to load patients</td></tr>`;
-            }
-        } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-danger text-center">Network error</td></tr>`;
-            console.error(err);
-        }
-    }
-
-    // Search functionality
-    searchInput.addEventListener("input", () => {
-        const term = searchInput.value.toLowerCase().trim();
-        const filtered = allPatients.filter(p =>
-            p.patient_id.toLowerCase().includes(term) ||
-            p.patient_name.toLowerCase().includes(term)
-        );
-        renderPatients(filtered);
-    });
-
-    // View patient orders
-    window.viewPatientOrders = async function(id, name) {
-        document.getElementById("bannerPatientName").textContent = name;
-        document.getElementById("bannerPatientId").textContent = "ID: " + id;
-
-        const patient = allPatients.find(p => p.patient_id === id);
-        document.getElementById("detailDob").textContent = formatDate(patient.patient_date_of_birth);
-        document.getElementById("detailPhone").textContent = patient.patient_phone || "-";
-        document.getElementById("detailGender").textContent = patient.patient_gender || "-";
-        document.getElementById("detailEmail").textContent = patient.patient_email || "-";
-        document.getElementById("detailAddress").textContent = patient.patient_address || "-";
-
-        const container = document.getElementById("ordersContainer");
-        container.innerHTML = `<p class="text-center"><div class="spinner-border text-primary"></div></p>`;
-
-        try {
-            const res = await fetch(API_URL + "?action=orders&patient_id=" + id);
-            const json = await res.json();
-
-            if (json.status === "success" && json.orders && json.orders.length > 0) {
-                container.innerHTML = json.orders.map(order => {
-                    let total = 0;
-                    const meds = order.medicines.map(m => {
-                        const sub = m.medicine_quantity * m.medicine_price;
-                        total += sub;
-                        return `<tr>
-                            <td>${m.medicine_name || 'Unknown'}</td>
-                            <td>${m.medicine_quantity}</td>
-                            <td>RM ${Number(m.medicine_price).toFixed(2)}</td>
-                            <td>RM ${sub.toFixed(2)}</td>
-                        </tr>`;
-                    }).join("");
-
-                    return `
-                        <div class="border rounded p-3 mb-3 bg-light">
-                            <h6>Order #${order.order_id} • ${formatDate(order.order_date)}</h6>
-                            <table class="table table-sm mt-2">
-                                <thead class="table-light">
-                                    <tr><th>Medicine</th><th>Qty</th><th>Price</th><th>Total</th></tr>
-                                </thead>
-                                <tbody>${meds}
-                                    <tr class="fw-bold">
-                                        <td colspan="3" class="text-end">Grand Total:</td>
-                                        <td>RM ${total.toFixed(2)}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>`;
-                }).join("");
-            } else {
-                container.innerHTML = `<p class="text-center text-muted fs-5">No order history found.</p>`;
-            }
-        } catch (err) {
-            container.innerHTML = `<p class="text-center text-danger">Failed to load orders</p>`;
-        }
-
-        patientsCard.style.display = "none";
-        orderSection.style.display = "block";
-    };
-
-    // Back button
-    backBtn.addEventListener("click", () => {
-        orderSection.style.display = "none";
-        patientsCard.style.display = "block";
-    });
-
-    // Load patients on start
-    loadPatients();
-});
-</script>

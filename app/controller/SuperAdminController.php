@@ -1,43 +1,56 @@
 <?php
-    require_once __DIR__ . "../config/config.php";
-    require_once __DIR__ . "/../model/UserModel.php";
+    
+
+    require_once __DIR__ . "/../config/conn.php";
+    require_once __DIR__ . "/../model/Superadmin.php";
 
     class SuperAdminController {
-        private $conn;
+        private $model;
 
         public function __construct($conn){
-            $this->conn = $conn;
+            $this->model = new SuperAdminModel($conn);
         }
 
-        public function getStats() {
-            $totalStmt    = $this->conn->query("SELECT COUNT(*) AS total FROM admin");
-            $activeStmt   = $this->conn->query("SELECT COUNT(*) AS active FROM admin WHERE admin_status = 'active'");
-            $inactiveStmt = $this->conn->query("SELECT COUNT(*) AS inactive FROM admin WHERE admin_status = 'inactive'");
-
-            $total    = $totalStmt->fetch_assoc()['total'];
-            $active   = $activeStmt->fetch_assoc()['active'];
-            $inactive = $inactiveStmt->fetch_assoc()['inactive'];
-
-            // Admins registered BY the current user (from session)
-            $currentUserId = $_SESSION['user_id'] ?? null;
-
-            $registeredByCurrent = 0;
-            if ($currentUserId) {
-                $stmt = $this->conn->prepare("SELECT COUNT(*) AS count FROM admin WHERE registered_by = ?");
-                $stmt->bind_param('s', $currentUserId);
-                $stmt->execute();
-                $registeredByCurrent = $stmt->get_result()->fetch_assoc()['count'];
-                $stmt->close();
-            }
-
-            echo json_encode([
-                'total'           => $total,
-                'active'          => $active,
-                'inactive'        => $inactive,
-                'registered_by_current'=> $registeredByCurrent
-            ]);
+        public function getStats(){
+            echo json_encode($this->model->getStats());
         }
 
-        
+        public function getAdmins() {
+            echo json_encode($this->model->getAllAdmin());
+        }
+
+        public function createAdmin(){
+            $data = $_POST;
+            $data['registered_by'] = $_SESSION['super_admin_id'] ?? 0;
+
+            echo json_encode($this->model->createAdmin($data));
+        }
+
+        public function deleteAdmin(){
+            $input = json_decode(file_get_contents('php://input'), true);
+            $success = $this->model->deleteAdmin($input['adminId']);
+
+            echo json_encode(['success' => $success]);
+        }
+
+        public function toggleStatus() {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $success = $this->model->toggleStatus($input['adminId'], $input['status']);
+            echo json_encode(['success' => $success]);
+        }
     }
+
+    //router
+    $action = $_GET['action'] ?? '';
+
+    $controller = new SuperAdminController($conn);
+
+    match ($action) {
+        'getStats'      => $controller->getStats(),
+        'getAdmin'      => $controller->getAdmins(),
+        'create'        => $controller->createAdmin(),
+        'toggleStatus'  => $controller->toggleStatus(),
+        'delete'        => $controller->deleteAdmin(),
+        default         => $controller->getStats()
+    };
 ?>

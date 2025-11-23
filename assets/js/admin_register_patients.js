@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadPatients() {
         if (!patientsTableBody) return;
 
-        fetch('/api/patients')
+        fetch('../../app/controller/AdminController.php?action=getPatients')
             .then(res => res.json())
             .then(data => {
                 patientsTableBody.innerHTML = '';
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Generate new patient ID
     function generatePatientId() {
         if (!patientIdInput) return;
-        fetch('/api/patient-id')
+        fetch('../../app/controller/AdminController.php?action=generatePatientId')
             .then(res => res.json())
             .then(data => { patientIdInput.value = data.id || 'Error'; })
             .catch(() => { patientIdInput.value = 'Error generating ID'; });
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const dob = new Date(formData.patient_date_of_birth);
                 const today = new Date();
-                today阅.setHours(0, 0, 0, 0); // Real today
+                today.setHours(0, 0, 0, 0); // Real today
                 if (dob > today) {
                     errors.push('Date of Birth cannot be in the future.');
                 }
@@ -103,44 +103,54 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (errors.length > 0) {
-                formErrors.style.display = 'block';
-                formErrors.innerHTML = errors.join('<br>');
+                // Assuming there is an error container, if not create alert
+                // The original code had formErrors, let's assume it exists or use alert
+                if (formErrors) {
+                    formErrors.style.display = 'block';
+                    formErrors.innerHTML = errors.join('<br>');
+                } else {
+                    alert(errors.join('\n'));
+                }
                 return;
             }
 
-            formErrors.style.display = 'none';
+            if (formErrors) formErrors.style.display = 'none';
 
             // REAL SUBMISSION
-            fetch('/api/patients', {
+            fetch('../../app/controller/AdminController.php?action=registerPatient', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             })
-            .then(res => {
-                if (!res.ok) throw new Error('Server error');
-                return res.json();
-            })
-            .then(result => {
-                if (result.success) {
-                    alert(`Patient ${formData.patient_id} registered successfully!`);
-                    
-                    // Refresh everything
-                    loadPatients();
-                    patientForm.reset();
-                    generatePatientId();
-                    document.getElementById('registered_by').value = 'SA001';
-                    
-                    // Close modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('registerPatientModal'));
-                    if (modal) modal.hide();
-                } else {
-                    throw new Error(result.error || 'Registration failed');
-                }
-            })
-            .catch(err => {
-                formErrors.style.display = 'block';
-                formErrors.innerHTML = 'Error: ' + err.message;
-            });
+                .then(res => {
+                    if (!res.ok) throw new Error('Server error');
+                    return res.json();
+                })
+                .then(result => {
+                    if (result.success) {
+                        alert(`Patient ${formData.patient_id} registered successfully!`);
+
+                        // Refresh everything
+                        loadPatients();
+                        patientForm.reset();
+                        generatePatientId();
+                        document.getElementById('registered_by').value = 'SA001';
+
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('registerPatientModal'));
+                        if (modal) modal.hide();
+                    } else {
+                        throw new Error(result.error || 'Registration failed');
+                    }
+                })
+                .catch(err => {
+                    if (formErrors) {
+                        formErrors.style.display = 'block';
+                        formErrors.innerHTML = 'Error: ' + err.message;
+                    } else {
+                        alert('Error: ' + err.message);
+                    }
+                });
         });
     }
 });
