@@ -15,6 +15,7 @@ function showSuccess() {
     document.getElementById('resetPasswordCard').style.display = 'none';
     document.getElementById('successCard').style.display = 'block';
 }
+
 function handleLogin(event) {
     event.preventDefault();
     const form = document.getElementById('login-form');

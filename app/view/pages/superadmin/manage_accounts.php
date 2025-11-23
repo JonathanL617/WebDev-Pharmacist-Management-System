@@ -6,7 +6,7 @@
         <div class="stat-card">
             <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
             <p class="stat-label">Total Accounts</p>
-            <div class="stat-value" id="activeAdmins">0</div>
+            <div class="stat-value" id="totalAdmins">0</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon"><i class="bi bi-person-check-fill"></i></div>
@@ -16,7 +16,7 @@
         <div class="stat-card">
             <div class="stat-icon"><i class="bi bi-person-check-fill"></i></div>
             <p class="stat-label">Inactive Accounts</p>
-            <div class="stat-value" id="activeAdmins">0</div>
+            <div class="stat-value" id="inActiveAdmins">0</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon"><i class="bi bi-person-check-fill"></i></div>
@@ -64,11 +64,8 @@
         </div>
 
         <div class="col-lg-3 col-md-6 mb-3 text-lg-end">
-            <button id="exportBtn" class="btn btn-outline-secondary me-2">
-                <i class="bi bi-upload"></i> Export
-            </button>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAdminModal">
-                <i class="bi bi-plus-circle"></i> Add User
+                <i class="bi bi-plus-circle"></i> Add Admin
             </button>
         </div>
     </div>
@@ -107,24 +104,26 @@
                 <form id="createAdminForm">
                     <div class="mb-3">
                         <label class="form-label" for="username">Username</label>
-                        <input type="text" class="form-control" id="" name="username" required>
+                        <input type="text" class="form-control" name="username" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="email">Email</label>
-                        <input type="email" class="form-control" id="" name="email" required>
+                        <input type="email" class="form-control" name="email" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="dob">Date of Birth</label>
-                        <input type="date" class="form-control" id="" name="dob" required>
+                        <input type="date" class="form-control" name="dob" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="password">Password</label>
-                        <input type="password" class="form-control" id="" name="password" required>
+                        <input type="password" class="form-control" name="password" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="regitered-by">Registered By</label>
-                        <input type="text" class="form-control" id="" name="registered-by" required>
+                        <label class="form-label" for="regitered_by">Registered By</label>
+                        <input type="text" class="form-control" 
+                         value="<?php echo htmlspecialchars($_SESSION['user_email'] ?? '')?>" readonly>
                     </div>
+                    <input type="hidden" name="registered_by" value="<?php echo $_SESSION['super_admin_id'] ?? 0; ?>">
                 </form>
             </div>
             <div class="modal-footer">
@@ -134,8 +133,3 @@
         </div>
     </div>
 </div>
-<!-- 
-    create & manage acc
-    delete acc
-    approve/reject request
--->

@@ -1,9 +1,12 @@
-function openTab(tabId, clickedTab){
+// Get user role from PHP session (passed via data attribute or inline script)
+const userRole = document.body.dataset.userRole || 'superadmin';
+
+function openTab(tabId, clickedTab) {
     //update url with new page
     window.location.href = `dashboard.php?page=${tabId}`;
 }
 
-document.addEventListener('DOMContentLoaded', function(){
+document.addEventListener('DOMContentLoaded', function () {
     const urlParams = new URLSearchParams(window.location.search);
     const currentPage = urlParams.get('page');
     const tabs = document.getElementsByClassName('tab');

@@ -1,15 +1,18 @@
+
 <?php 
     session_start();
     require_once '../config/config.php';
     
+    /*
     if(!isset($_SESSION['user_id'])){
         header('Location:' . BASE_URL . '/app/view/login_page.php');
         exit();
     }
+    */
     
 
-    $userRole = $_SESSION['user_role'];
-
+    $userRole = $_SESSION['user_role'] ?? 'superadmin'; // Default to pharmacist if not set for testing
+    
     $defaultPages = [
         'superadmin' => 'manage_accounts',
         'admin' => 'manage_users',
@@ -20,15 +23,15 @@
     $validPages = [
         'superadmin' => ['manage_accounts', 'admin_requests'],
         'admin' => ['manage_users', 'register_patients', 'account_requests'],
-        'pharmacist' => ['stock_management', 'prescription_requests', 'prescription_queue', 'dispense_history'],
-        'doctor' => ['patient_records', 'prescriptions', 'resupply_requests', 'history']
+        'pharmacist' => ['stock_management',  'prescription_queue', 'API'],
+        'doctor' => ['patient_records', 'prescriptions', 'resupply_requests', 'API']
     ];
 
-    $page = isset($_GET['page']) ? $_GET['page'] : $defaultPages[$userRole];
+    $page = isset($_GET['page']) ? $_GET['page'] : ($defaultPages[$userRole] ?? 'stock_management');
 
     // Validate page and redirect if invalid
-    if (!in_array($page, $validPages[$userRole])) {
-        $page = $defaultPages[$userRole];
+    if (!isset($validPages[$userRole]) || !in_array($page, $validPages[$userRole])) {
+        $page = $defaultPages[$userRole] ?? 'stock_management';
         header("Location: dashboard.php?page=" . $page);
         exit();
     }
@@ -68,23 +71,34 @@
 
                     case 'pharmacist': ?>
                         <a class="tab" data-page="stock_management" onclick="openTab('stock_management', this)">Medicine Stock</a>
-                        <a class="tab" data-page="prescription_requests" onclick="openTab('prescription_requests', this)">Prescription Requests</a>
+                    
                         <a class="tab" data-page="prescription_queue" onclick="openTab('prescription_queue', this)">Prescription Queue</a>
-                        <a class="tab" data-page="dispense_history" onclick="openTab('dispense_history', this)">Dispense History</a>
+                        <a class="tab" data-page="API" onclick="openTab('API', this)">Drug Search</a>
                     <?php break;
 
                     case 'doctor': ?>
                         <a class="tab" data-page="patient_records" onclick="openTab('patient_records', this)">Patient Records</a>
                         <a class="tab" data-page="prescriptions" onclick="openTab('prescriptions', this)">Prescriptions</a>
-                        <a class="tab" data-page="resupply_requests" onclick="openTab('resupply_requests', this)">Resupply Requests</a>
-                        <a class="tab" data-page="history" onclick="openTab('history', this)">History</a>
+                        <a class="tab" data-page="API" onclick="openTab('API', this)">Drug Search</a>
+                        
                     <?php break;
                 } ?>
                 
             </div>
-            <div class="profile-container">
-                <i class="bi bi-person-circle me-3 fs-2"></i>
-                <span><?php echo htmlspecialchars($_SESSION['user_email'] ?? 'Username'); ?></span>
+            <div class="profile-container dropdown">
+                <a class="dropdown-toggle d-flex align-items-center text-decoration-none text-dark" 
+                href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle me-3 fs-2"></i>
+                    <span><?php echo htmlspecialchars($_SESSION['user_email'] ?? 'User'); ?></span>
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                    <li>
+                        <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                            <i class="bi bi-box-arrow-right me-2"></i> Logout
+                        </button>
+                    </li>
+                </ul>
             </div>
         </nav>
 
@@ -99,18 +113,67 @@
                 }
             ?>
         </div>
+    
         <?php
+        /*
             echo "<pre>";
             echo "Current Role: " . $userRole . "\n";
             echo "Page: " . $page . "\n";
             echo "Looking for file: " . $contentFile . "\n";
             echo "File exists: " . (file_exists($contentFile) ? 'Yes' : 'No') . "\n";
             echo "</pre>";
+        */
         ?>
+
+        <!-- Logout Modal -->
+        <div class="modal fade" id="logoutModal" tabindex="-1">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirm Logout</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to log out?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form method="POST" action="<?php echo BASE_URL; ?>/app/controller/AuthController.php">
+                            <input type="hidden" name="logout" value="1">
+                            <button type="submit" class="btn btn-danger">Yes, Logout</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- scripts -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
         <script src="<?php echo BASE_URL; ?>/assets/js/main.js"></script>
-        <script src="<?php echo BASE_URL; ?>/assets/js/manageAccount.js"></script>
+    <!-- Global Variables -->
+    <script>
+        const loggedInUserId = "<?php echo $_SESSION['user_id'] ?? ''; ?>";
+        const loggedInUserRole = "<?php echo $userRole; ?>";
+    </script>
+
+    <!-- Page Specific Scripts -->
+    <?php
+        $pageScripts = [
+            'manage_accounts' => ['manageAccount.js'],
+            'manage_users' => ['admin_manage_user.js'],
+            'register_patients' => ['admin_register_patients.js'],
+            'stock_management' => ['pharmacist_stock_management.js'],
+            'prescription_queue' => ['prescription_queue.js'],
+            'patient_records' => ['doctor_patient_records.js'],
+            'prescriptions' => ['doctor_prescriptions.js'],
+            // Add other pages as needed
+        ];
+
+        if (isset($pageScripts[$page])) {
+            foreach ($pageScripts[$page] as $script) {
+                echo '<script src="' . BASE_URL . '/assets/js/' . $script . '"></script>';
+            }
+        }
+    ?>
     </body>
 </html>
