@@ -1,39 +1,91 @@
 <?php
-session_start(); // required
+// File: app/controller/PharmacistController2.php
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_once __DIR__ . '/../config/conn.php';
+require_once __DIR__ . '/../model/Pharmacist2.php';
+
 header('Content-Type: application/json');
 
-$loggedInUser = $_SESSION['user_id'] ?? 'P001'; // fallback
-require_once 'Pharmacist2.php';
+// SUPER SMART LOGIN CHECK — works with old & new login systems
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'msg' => 'Please log in again.']);
+    exit;
+}
 
-$input = json_decode(file_get_contents('php://input'), true);
-$action = $input['action'] ?? '';
+// Determine the correct approver_id (P001 style)
+if (!empty($_SESSION['staff_id'])) {
+    $approver_id = $_SESSION['staff_id'];           // New way → P001
+} else {
+    $approver_id = $_SESSION['user_id'];            // Old way → fallback
+    // Optional: auto-upgrade session (remove later)
+    $_SESSION['staff_id'] = $approver_id;
+}
+
+$input  = json_decode(file_get_contents('php://input'), true) ?? [];
+$action = $input['action'] ?? $_GET['action'] ?? '';
 
 $model = new PharmacyModel($conn);
 
-if($action==='get_details'){
-    $order_id = $input['order_id'] ?? '';
-    $data = $model->getOrderDetails($order_id);
-    if(!$data['order']) echo json_encode(['success'=>false,'msg'=>'Order not found']);
-    else echo json_encode(['success'=>true,'order'=>$data['order'],'details'=>$data['details']]);
-    exit;
+switch ($action) {
+
+    case 'get_details':
+        $order_id = trim($input['order_id'] ?? '');
+        if (empty($order_id)) {
+            echo json_encode(['success' => false, 'msg' => 'Order ID is required']);
+            exit;
+        }
+
+        $data = $model->getOrderDetails($order_id);
+
+        if ($data['order']) {
+            echo json_encode([
+                'success' => true,
+                'order'   => $data['order'],
+                'details' => $data['details'] ?? []
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'msg' => 'Order not found']);
+        }
+        break;
+
+
+    case 'approve':
+    case 'reject':
+    case 'done':
+        $order_id = trim($input['order_id'] ?? '');
+        $comment  = $input['comment'] ?? '';
+
+        if (empty($order_id)) {
+            echo json_encode(['success' => false, 'msg' => 'Invalid order ID']);
+            exit;
+        }
+
+        // CORRECT: Now using $approver_id = P001, P002 → NO MORE FOREIGN KEY ERROR!
+        $result = $model->updateOrder($order_id, $action, $approver_id, $comment);
+        echo json_encode($result);
+        break;
+
+
+    case 'list_orders':
+        $filter = $input['filter'] ?? $_GET['filter'] ?? '';
+        $search = $input['search'] ?? '';
+
+        $orders = $model->getAllOrders($search, $filter);
+
+        echo json_encode([
+            'success' => true,
+            'orders'  => $orders
+        ]);
+        break;
+
+
+    default:
+        echo json_encode(['success' => false, 'msg' => 'Unknown action']);
+        break;
 }
 
-if(in_array($action,['approve','reject','done'])){
-    $order_id = $input['order_id'] ?? '';
-    $approver_id = $loggedInUser;
-    $comment = $input['comment'] ?? '';
-    $res = $model->updateOrder($order_id,$action,$approver_id,$comment);
-    echo json_encode($res);
-    exit;
-}
-
-if($action==='list_orders'){
-    $filter = $input['filter'] ?? '';
-    $search = $input['search'] ?? '';
-    $orders = $model->getAllOrders($search,$filter);
-    echo json_encode(['success'=>true,'orders'=>$orders]);
-    exit;
-}
-
-echo json_encode(['success'=>false,'msg'=>'Unknown action']);
-?>
+exit;

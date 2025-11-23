@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once __DIR__ . '/../config/config.php';
 
 // Generate next medicine ID
 function getNextMedicineID($conn) {
@@ -26,6 +26,9 @@ function updateMedicine($conn, $id, $name, $price, $quantity, $desc){
     $stmt->bind_param("sdiss", $name, $price, $quantity, $desc, $id);
     $stmt->execute();
     $stmt->close();
+
+    
+
 }
 
 function deleteMedicine($conn, $id){
@@ -51,7 +54,7 @@ function getAllMedicines($conn){
 
 
 <?php
-require 'config.php';
+require_once __DIR__ . '/../config/config.php';
 
 class PharmacyModel {
     private $conn;

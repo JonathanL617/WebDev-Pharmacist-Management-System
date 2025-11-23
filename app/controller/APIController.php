@@ -1,20 +1,25 @@
 <?php
-header("Content-Type: application/json");
-require_once "API.php";
+// controller/APIController.php
+// THIS FILE MUST OUTPUT ONLY JSON — NOTHING ELSE!
 
-if (!isset($_GET['name'])) {
+// Prevent any output before headers
+ob_clean();
+
+// Only respond if ?name is provided
+if (!isset($_GET['name']) || trim($_GET['name']) === '') {
+    header("Content-Type: application/json");
     echo json_encode(["error" => "No drug name provided."]);
     exit;
 }
 
+require_once __DIR__ . '/../model/API.php';
+
+header("Content-Type: application/json");
+
 $name = trim($_GET['name']);
-if ($name === "") {
-    echo json_encode(["error" => "Please enter a drug name."]);
-    exit;
-}
 
 $model = new DrugModel();
-$response = $model->searchDrug($name);
+$result = $model->searchDrug($name);
 
-echo json_encode($response);
-?>
+echo json_encode($result);
+exit; // This stops everything

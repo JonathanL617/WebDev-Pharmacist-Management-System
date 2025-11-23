@@ -1,90 +1,131 @@
-let confirmMode="";
 
-function openConfirm(id,mode){
-    confirmMode=mode;
-    document.getElementById("confirmOrderId").value=id;
-    document.getElementById("confirmTitle").innerHTML=(mode=="approve")?"Approve Order":(mode=="reject")?"Reject Order":"Mark as Done";
-    document.getElementById("confirmMsg").innerHTML="";
+// 1. CORRECT API URL
+
+
+// 2. PASS LOGGED IN USER ID FROM PHP (ADD THIS IN YOUR PHP FILE BEFORE JS!)
+const loggedInUserId = "<?= $_SESSION['staff_id'] ?? 'P001' ?>";
+
+let confirmMode = "";
+
+function openConfirm(id, mode) {
+    confirmMode = mode;
+    document.getElementById("confirmOrderId").value = id;
+    document.getElementById("confirmTitle").innerHTML = 
+        mode === "approve" ? "Approve Order" : 
+        mode === "reject" ? "Reject Order" : "Mark as Done";
+    document.getElementById("confirmMsg").innerHTML = "";
     new bootstrap.Modal(document.getElementById("confirmModal")).show();
 }
 
-document.getElementById("confirmBtn").onclick=function(){
-    let id=document.getElementById("confirmOrderId").value;
-    let approver = loggedInUserId; // always use the logged-in user
-    let comment=document.getElementById("confirmComment").value;
+document.getElementById("confirmBtn").onclick = function() {
+    const id = document.getElementById("confirmOrderId").value;
+    const comment = document.getElementById("confirmComment").value;
 
-    fetch("controller.php",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({action:confirmMode,order_id:id,approver_id:approver,comment:comment})
+    fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            action: confirmMode,
+            order_id: id,
+            approver_id: loggedInUserId,  // NOW IT WORKS!
+            comment: comment
+        })
     })
-    .then(r=>r.json())
-    .then(d=>{
-        if(!d.success){
-            document.getElementById("confirmMsg").innerHTML=`<div class='alert alert-danger'>${d.msg}</div>`;
+    .then(r => r.json())
+    .then(d => {
+        if (!d.success) {
+            document.getElementById("confirmMsg").innerHTML = 
+                `<div class='alert alert-danger'>${d.msg}</div>`;
             return;
         }
-        alert("Order " + confirmMode + " successfully!");
-        loadOrders();
-        new bootstrap.Modal(document.getElementById("confirmModal")).hide();
+        alert("Order " + confirmMode + "d successfully!");
+        bootstrap.Modal.getInstance(document.getElementById("confirmModal")).hide();
+        loadOrders(); // refresh table
     });
-}
+};
 
-function viewOrder(id){
-    document.getElementById("viewModalBody").innerHTML="Loading...";
-    new bootstrap.Modal(document.getElementById("viewModal")).show();
+function viewOrder(id) {
+    const body = document.getElementById("viewModalBody");
+    body.innerHTML = "Loading...";
+    const modal = new bootstrap.Modal(document.getElementById("viewModal"));
+    modal.show();
 
-    fetch("controller.php",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({action:"get_details",order_id:id})
+    fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "get_details", order_id: id })
     })
-    .then(r=>r.json())
-    .then(d=>{
-        if(!d.success){ document.getElementById("viewModalBody").innerHTML=d.msg; return; }
-        let o=d.order, det=d.details;
-        let html=`<strong>Order:</strong> ${o.order_id}<br>
-                  <strong>Date:</strong> ${o.order_date}<br>
-                  <strong>Patient:</strong> ${o.patient_name}<br>
-                  <strong>Doctor:</strong> ${o.staff_name}<br>
-                  <strong>Status:</strong> ${o.status_id}<hr>
-                  <table class="table table-bordered"><tr><th>Medicine</th><th>Qty</th><th>Price</th><th>Stock</th><th>Subtotal</th></tr>`;
-        let total=0;
-        det.forEach(x=>{
-            let sub=x.ordered_qty*x.medicine_price;
-            total+=sub;
-            html+=`<tr><td>${x.medicine_name}</td><td>${x.ordered_qty}</td><td>${x.medicine_price}</td><td>${x.stock_qty}</td><td>${sub.toFixed(2)}</td></tr>`;
+    .then(r => r.json())
+    .then(d => {
+        console.log("View Response:", d); // CHECK THIS IN F12 CONSOLE!
+
+        if (!d.success || !d.order) {
+            body.innerHTML = `<div class="alert alert-danger">${d.msg || 'Order not found'}</div>`;
+            return;
+        }
+
+        let html = `
+            <strong>Order ID:</strong> ${d.order.order_id}<br>
+            <strong>Date:</strong> ${d.order.order_date}<br>
+            <strong>Patient:</strong> ${d.order.patient_name || '—'}<br>
+            <strong>Doctor:</strong> ${d.order.staff_name || '—'}<br>
+            <strong>Status:</strong> <span class="badge bg-primary">${d.order.status_id || 'Pending'}</span><hr>
+            <table class="table table-bordered">
+                <tr><th>Medicine</th><th>Qty</th><th>Price</th><th>Stock</th><th>Subtotal</th></tr>`;
+
+        let total = 0;
+        (d.details || []).forEach(x => {
+            const sub = x.ordered_qty * x.medicine_price;
+            total += sub;
+            html += `<tr>
+                <td>${x.medicine_name}</td>
+                <td>${x.ordered_qty}</td>
+                <td>RM ${parseFloat(x.medicine_price).toFixed(2)}</td>
+                <td>${x.stock_qty}</td>
+                <td>RM ${sub.toFixed(2)}</td>
+            </tr>`;
         });
-        html+=`</table><div class="text-end"><strong>Total: RM ${total.toFixed(2)}</strong></div>`;
-        document.getElementById("viewModalBody").innerHTML=html;
+
+        html += `</table>
+                 <div class="text-end"><strong>Total: RM ${total.toFixed(2)}</strong></div>`;
+        body.innerHTML = html;
+    })
+    .catch(err => {
+        body.innerHTML = `<div class="alert alert-danger">Network error</div>`;
+        console.error(err);
     });
 }
 
-function loadOrders(filter=''){
-    fetch('controller.php',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({action:'list_orders',filter})
+function loadOrders(filter = '') {
+    fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list_orders', filter: filter })
     })
-    .then(r=>r.json())
-    .then(d=>{
-        let tbody=document.getElementById('ordersTable');
-        tbody.innerHTML='';
-        if(!d.success || d.orders.length===0){
-            tbody.innerHTML="<tr><td colspan='6' class='text-center'>No orders found</td></tr>";
+    .then(r => r.json())
+    .then(d => {
+        const tbody = document.getElementById('ordersTable');
+        tbody.innerHTML = '';
+
+        if (!d.success || !d.orders || d.orders.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6' class='text-center'>No orders found</td></tr>";
             return;
         }
-        d.orders.forEach(o=>{
-            let statusClass=o.status_id.toLowerCase()==='approved'?'bg-success':
-                            o.status_id.toLowerCase()==='rejected'?'bg-danger':
-                            o.status_id.toLowerCase()==='done'?'bg-info text-dark':'bg-warning text-dark';
-            let row=document.createElement('tr');
-            row.innerHTML=`
+
+        d.orders.forEach(o => {
+            const status = o.status_id || 'Pending';
+            const badgeClass = 
+                status === 'Approved' ? 'bg-success' :
+                status === 'Rejected' ? 'bg-danger' :
+                status === 'Done' ? 'bg-info text-dark' : 'bg-warning text-dark';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
                 <td>${o.order_id}</td>
                 <td>${o.order_date}</td>
-                <td>${o.patient_name}</td>
-                <td>${o.staff_name}</td>
-                <td><span class="badge ${statusClass}">${o.status_id}</span></td>
+                <td>${o.patient_name || '—'}</td>
+                <td>${o.staff_name || '—'}</td>
+                <td><span class="badge ${badgeClass}">${status}</span></td>
                 <td>
                     <button class="btn btn-primary btn-sm" onclick="viewOrder('${o.order_id}')">View</button>
                     <button class="btn btn-success btn-sm" onclick="openConfirm('${o.order_id}','approve')">Approve</button>
@@ -96,5 +137,5 @@ function loadOrders(filter=''){
     });
 }
 
-// Load on page ready
-document.addEventListener('DOMContentLoaded',()=>loadOrders());
+// Load orders when page loads
+document.addEventListener('DOMContentLoaded', () => loadOrders());
