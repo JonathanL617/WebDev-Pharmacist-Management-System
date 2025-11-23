@@ -1,3 +1,4 @@
+
 <?php 
     session_start();
     require_once '../config/config.php';
@@ -7,7 +8,6 @@
         exit();
     }
     
-
     $userRole = $_SESSION['user_role'];
 
     $defaultPages = [
@@ -20,8 +20,8 @@
     $validPages = [
         'superadmin' => ['manage_accounts', 'admin_requests'],
         'admin' => ['manage_users', 'register_patients', 'account_requests'],
-        'pharmacist' => ['stock_management', 'prescription_requests', 'prescription_queue', 'dispense_history'],
-        'doctor' => ['patient_records', 'prescriptions', 'resupply_requests', 'history']
+        'pharmacist' => ['stock_management',  'prescription_queue', 'API'],
+        'doctor' => ['patient_records', 'prescriptions', 'resupply_requests', 'API']
     ];
 
     $page = isset($_GET['page']) ? $_GET['page'] : $defaultPages[$userRole];
@@ -68,16 +68,16 @@
 
                     case 'pharmacist': ?>
                         <a class="tab" data-page="stock_management" onclick="openTab('stock_management', this)">Medicine Stock</a>
-                        <a class="tab" data-page="prescription_requests" onclick="openTab('prescription_requests', this)">Prescription Requests</a>
+                    
                         <a class="tab" data-page="prescription_queue" onclick="openTab('prescription_queue', this)">Prescription Queue</a>
-                        <a class="tab" data-page="dispense_history" onclick="openTab('dispense_history', this)">Dispense History</a>
+                        <a class="tab" data-page="API" onclick="openTab('API', this)">Drug Search</a>
                     <?php break;
 
                     case 'doctor': ?>
                         <a class="tab" data-page="patient_records" onclick="openTab('patient_records', this)">Patient Records</a>
                         <a class="tab" data-page="prescriptions" onclick="openTab('prescriptions', this)">Prescriptions</a>
-                        <a class="tab" data-page="resupply_requests" onclick="openTab('resupply_requests', this)">Resupply Requests</a>
-                        <a class="tab" data-page="history" onclick="openTab('history', this)">History</a>
+                        <a class="tab" data-page="API" onclick="openTab('API', this)">Drug Search</a>
+                        
                     <?php break;
                 } ?>
                 
