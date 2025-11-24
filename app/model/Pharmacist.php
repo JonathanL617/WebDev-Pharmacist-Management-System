@@ -1,5 +1,5 @@
 <?php
-require_once '../config/config.php';
+require_once __DIR__ . '/../config/conn.php';
 
 class PharmacyModel {
     private $conn;

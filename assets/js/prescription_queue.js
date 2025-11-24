@@ -1,15 +1,23 @@
 // Load orders and update stats
+// Load orders and update stats
 function loadOrders(filter = '') {
-    fetch('../../controller/PharmacistController.php', {
+    fetch('/WebDev-Pharmacist-Management-System/app/controller/PharmacistController.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'list_orders', filter })
     })
         .then(r => r.json())
         .then(d => {
+            console.log('Orders response:', d); // Debug log
             let tbody = document.getElementById('ordersTable');
+            if (!tbody) {
+                console.error('ordersTable element not found');
+                return;
+            }
+            
             tbody.innerHTML = '';
-            if (!d.success || d.orders.length === 0) {
+            
+            if (!d.success || !d.orders || d.orders.length === 0) {
                 tbody.innerHTML = "<tr><td colspan='6' class='text-center'>No orders found</td></tr>";
                 updateStats([]);
                 return;
@@ -18,29 +26,73 @@ function loadOrders(filter = '') {
             updateStats(d.orders);
 
             d.orders.forEach(o => {
-                let statusClass = o.status_id.toLowerCase() === 'approved' ? 'bg-success' :
-                    o.status_id.toLowerCase() === 'rejected' ? 'bg-danger' :
-                        o.status_id.toLowerCase() === 'done' ? 'bg-info text-dark' : 'bg-warning text-dark';
+                // Fix: Use the correct status field name
+                const status = o.status_id || o.status || 'Pending';
+                const statusClass = getStatusBadgeClass(status);
+                
                 let row = document.createElement('tr');
                 row.innerHTML = `
-                <td>${o.order_id}</td>
-                <td>${o.order_date}</td>
-                <td>${o.patient_name || '—'}</td>
-                <td>${o.staff_name || '—'}</td>
-                <td><span class="badge ${badgeClass}">${status}</span></td>
-                <td>
-                    <button class="btn btn-primary btn-sm" onclick="viewOrder('${o.order_id}')">View</button>
-                    <button class="btn btn-success btn-sm" onclick="openConfirm('${o.order_id}','approve')">Approve</button>
-                    <button class="btn btn-danger btn-sm" onclick="openConfirm('${o.order_id}','reject')">Reject</button>
-                    <button class="btn btn-info btn-sm" onclick="openConfirm('${o.order_id}','done')">Done</button>
-                </td>`;
+                    <td>${o.order_id}</td>
+                    <td>${o.order_date}</td>
+                    <td>${o.patient_name || '—'}</td>
+                    <td>${o.staff_name || '—'}</td>
+                    <td><span class="badge ${statusClass}">${status}</span></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="viewOrder('${o.order_id}')">View</button>
+                        ${status.toLowerCase() === 'pending' ? `
+                            <button class="btn btn-success btn-sm" onclick="openConfirm('${o.order_id}','approve')">Approve</button>
+                            <button class="btn btn-danger btn-sm" onclick="openConfirm('${o.order_id}','reject')">Reject</button>
+                        ` : ''}
+                        ${status.toLowerCase() === 'approved' ? `
+                            <button class="btn btn-info btn-sm" onclick="openConfirm('${o.order_id}','done')">Done</button>
+                        ` : ''}
+                    </td>
+                `;
                 tbody.appendChild(row);
             });
         })
         .catch(error => {
             console.error('Error loading orders:', error);
-            document.getElementById('ordersTable').innerHTML = "<tr><td colspan='6' class='text-center text-danger'>Error loading orders</td></tr>";
+            let tbody = document.getElementById('ordersTable');
+            if (tbody) {
+                tbody.innerHTML = "<tr><td colspan='6' class='text-center text-danger'>Error loading orders</td></tr>";
+            }
         });
+}
+
+// Add this helper function for status badges
+function getStatusBadgeClass(status) {
+    const statusLower = status.toLowerCase();
+    switch(statusLower) {
+        case 'approved': return 'bg-success';
+        case 'rejected': return 'bg-danger';
+        case 'done': return 'bg-info text-dark';
+        case 'completed': return 'bg-info text-dark';
+        case 'pending': return 'bg-warning text-dark';
+        default: return 'bg-secondary';
+    }
+}
+
+// Also fix the updateStats function to handle the status field correctly
+function updateStats(orders) {
+    const total = orders.length;
+    const pending = orders.filter(o => {
+        const status = o.status_id || o.status || '';
+        return status.toLowerCase() === 'pending';
+    }).length;
+    const approved = orders.filter(o => {
+        const status = o.status_id || o.status || '';
+        return status.toLowerCase() === 'approved';
+    }).length;
+    const done = orders.filter(o => {
+        const status = o.status_id || o.status || '';
+        return status.toLowerCase() === 'done' || status.toLowerCase() === 'completed';
+    }).length;
+
+    document.getElementById('totalOrders').textContent = total;
+    document.getElementById('pendingOrders').textContent = pending;
+    document.getElementById('approvedOrders').textContent = approved;
+    document.getElementById('doneOrders').textContent = done;
 }
 
 function updateStats(orders) {
@@ -72,7 +124,7 @@ if (confirmBtn) {
         let approver = loggedInUserId; // Ensure this variable is defined or available
         let comment = document.getElementById("confirmComment").value;
 
-        fetch("../../controller/PharmacistController.php", {
+        fetch('/WebDev-Pharmacist-Management-System/app/controller/PharmacistController.php', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: confirmMode, order_id: id, approver_id: approver, comment: comment })
@@ -94,7 +146,7 @@ function viewOrder(id) {
     document.getElementById("viewModalBody").innerHTML = "Loading...";
     new bootstrap.Modal(document.getElementById("viewModal")).show();
 
-    fetch("../../controller/PharmacistController.php", {
+    fetch('/WebDev-Pharmacist-Management-System/app/controller/PharmacistController.php', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "get_details", order_id: id })
