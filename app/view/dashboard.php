@@ -9,10 +9,14 @@
         exit();
     }
     */
-    
+   $userRole = $_SESSION['user_role'] ?? 'admin'; // Default to admin if not set for testing
 
-    $userRole = $_SESSION['user_role'] ?? 'doctor'; // Default to pharmacist if not set for testing
-    $staff_id = $_SESSION['staff_id'] ?? 'D001'; // Use session or fallback
+    //$userRole = $_SESSION['user_role'] ?? 'pharmacist'; // Default to pharmacist if not set for testing
+    //$staff_id = $_SESSION['staff_id'] ?? 'P001'; // Use session or fallback
+
+    //$userRole = $_SESSION['user_role'] ?? 'doctor'; // Default to doctor if not set for testing
+    //$staff_id = $_SESSION['staff_id'] ?? 'D001'; // Use session or fallback
+    
 
     $defaultPages = [
         'superadmin' => 'manage_accounts',
@@ -53,7 +57,11 @@
         <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/manage_user.css">
         <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/manage_accounts.css">
     </head>
-    <body>
+
+        <!-- ⚠️ IMPORTANT-->
+        <body data-staff-id="<?php echo $staff_id; ?>">
+        <!-- ⚠️ IMPORTANT: This data attribute is used by JavaScript to get staff ID -->
+
         <!-- navigation bar -->
         <nav class="nav-container">
             <div class="tab-container">
