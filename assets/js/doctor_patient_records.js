@@ -7,6 +7,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const orderHistorySection = document.getElementById('orderHistorySection');
     const backBtn = document.getElementById('backToPatients');
 
+    // Add this function to load REAL dashboard statistics (ALL doctors)
+    function loadDashboardStats() {
+        console.log('Loading dashboard stats...');
+        
+        fetch(`../../app/controller/DoctorController.php?action=getDashboardStats`)
+            .then(res => res.json())
+            .then(data => {
+                console.log('API Response:', data);
+                if (data.success) {
+                    document.getElementById('totalPatients').textContent = data.stats.total_patients || '0';
+                    document.getElementById('recentConsultations').textContent = data.stats.recent_consultations || '0';
+                    document.getElementById('pendingPrescriptions').textContent = data.stats.pending_prescriptions || '0';
+                    document.getElementById('todayAppointments').textContent = data.stats.todays_appointments || '0';
+                }
+            })
+            .catch(err => console.error('Error loading dashboard stats:', err));
+    }
+
+    // Call loadDashboardStats directly (we're already in DOMContentLoaded)
+    console.log('DOM loaded, now loading stats...');
+    loadDashboardStats();
+
     // Load patients
     function loadPatients(search = '') {
         fetch(`../../app/controller/DoctorController.php?action=getPatients&search=${search}`)
@@ -27,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${p.patient_phone}</td>
                         <td>${p.patient_gender}</td>
                         <td>
-                            <button class="btn btn-sm btn-info text-white view-btn" 
+                            <button class="btn btn-sm btn-primary view-btn" 
                                 data-id="${p.patient_id}"
                                 data-name="${p.patient_name}"
                                 data-dob="${p.patient_date_of_birth}"
@@ -96,12 +118,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    function getStatusColor(status) {
-        if (status === 'Pending') return 'warning';
-        if (status === 'Approved') return 'success';
-        if (status === 'Rejected') return 'danger';
-        return 'secondary';
-    }
+function getStatusColor(status) {
+    const statusLower = status.toLowerCase();
+    if (statusLower === 'pending') return 'warning';
+    if (statusLower === 'approved') return 'success';
+    if (statusLower === 'rejected') return 'danger';
+    if (statusLower === 'done' || statusLower === 'completed') return 'info';
+    return 'secondary';
+}
 
     // Event Listeners
     if (searchInput) {

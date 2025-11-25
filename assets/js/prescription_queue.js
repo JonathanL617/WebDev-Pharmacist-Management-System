@@ -1,5 +1,7 @@
+
 // Load orders and update stats
-// Load orders and update stats
+loggedInUser = document.body.dataset.staffId;
+console.log('Staff ID from data attribute:', loggedInUser); // Add this line
 function loadOrders(filter = '') {
     fetch('/WebDev-Pharmacist-Management-System/app/controller/PharmacistController.php', {
         method: 'POST',
@@ -84,28 +86,18 @@ function updateStats(orders) {
         const status = o.status_id || o.status || '';
         return status.toLowerCase() === 'approved';
     }).length;
-    const done = orders.filter(o => {
+    const rejected = orders.filter(o => {
         const status = o.status_id || o.status || '';
-        return status.toLowerCase() === 'done' || status.toLowerCase() === 'completed';
+        return status.toLowerCase() === 'rejected';
     }).length;
 
     document.getElementById('totalOrders').textContent = total;
     document.getElementById('pendingOrders').textContent = pending;
     document.getElementById('approvedOrders').textContent = approved;
-    document.getElementById('doneOrders').textContent = done;
+    document.getElementById('rejectedOrders').textContent = rejected;
 }
 
-function updateStats(orders) {
-    const total = orders.length;
-    const pending = orders.filter(o => o.status_id === 'Pending').length;
-    const approved = orders.filter(o => o.status_id === 'Approved').length;
-    const done = orders.filter(o => o.status_id === 'Done').length;
 
-    document.getElementById('totalOrders').textContent = total;
-    document.getElementById('pendingOrders').textContent = pending;
-    document.getElementById('approvedOrders').textContent = approved;
-    document.getElementById('doneOrders').textContent = done;
-}
 
 let confirmMode = "";
 
@@ -114,6 +106,7 @@ function openConfirm(id, mode) {
     document.getElementById("confirmOrderId").value = id;
     document.getElementById("confirmTitle").innerHTML = (mode == "approve") ? "Approve Order" : (mode == "reject") ? "Reject Order" : "Mark as Done";
     document.getElementById("confirmMsg").innerHTML = "";
+    document.getElementById("confirmComment").value = "";
     new bootstrap.Modal(document.getElementById("confirmModal")).show();
 }
 
@@ -121,8 +114,9 @@ const confirmBtn = document.getElementById("confirmBtn");
 if (confirmBtn) {
     confirmBtn.onclick = function () {
         let id = document.getElementById("confirmOrderId").value;
-        let approver = loggedInUserId; // Ensure this variable is defined or available
+        let approver = loggedInUser; // Ensure this variable is defined or available
         let comment = document.getElementById("confirmComment").value;
+        
 
         fetch('/WebDev-Pharmacist-Management-System/app/controller/PharmacistController.php', {
             method: "POST",
@@ -159,17 +153,97 @@ function viewOrder(id) {
                   <strong>Date:</strong> ${o.order_date}<br>
                   <strong>Patient:</strong> ${o.patient_name}<br>
                   <strong>Doctor:</strong> ${o.staff_name}<br>
-                  <strong>Status:</strong> ${o.status_id}<hr>
+                  <strong>Status:</strong> ${o.status_id}<hr>`;
+
+            // Add approval history section
+            if (d.approval_details && d.approval_details.length > 0) {
+                html += `<h6>Approval History</h6>`;
+                d.approval_details.forEach(approval => {
+                    html += `<div class="border-bottom pb-2 mb-2">
+                        <strong>${approval.approval_status}</strong> 
+                        <small class="text-muted">by ${approval.approver_id} on ${approval.approval_date}</small><br>
+                        ${approval.approval_comment ? `<em>"${approval.approval_comment}"</em>` : '<em>No comment</em>'}
+                    </div>`;
+                });
+                html += `<hr>`;
+            }
+
+            html += `<h6>Medicines</h6>
                   <table class="table table-bordered"><tr><th>Medicine</th><th>Qty</th><th>Price</th><th>Stock</th><th>Subtotal</th></tr>`;
+            
             let total = 0;
             det.forEach(x => {
                 let sub = x.ordered_qty * x.medicine_price;
                 total += sub;
                 html += `<tr><td>${x.medicine_name}</td><td>${x.ordered_qty}</td><td>${x.medicine_price}</td><td>${x.stock_qty}</td><td>${sub.toFixed(2)}</td></tr>`;
             });
+            
             html += `</table><div class="text-end"><strong>Total: RM ${total.toFixed(2)}</strong></div>`;
             document.getElementById("viewModalBody").innerHTML = html;
         });
 }
 
 document.addEventListener('DOMContentLoaded', () => loadOrders());
+
+// Search functionality
+const searchInput = document.getElementById('searchOrders');
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.trim();
+        if (searchTerm) {
+            // Send search request
+            fetch('/WebDev-Pharmacist-Management-System/app/controller/PharmacistController.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'list_orders', search: searchTerm })
+            })
+            .then(r => r.json())
+            .then(d => {
+                console.log('Search results:', d);
+                let tbody = document.getElementById('ordersTable');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                if (!d.success || !d.orders || d.orders.length === 0) {
+                    tbody.innerHTML = "<tr><td colspan='6' class='text-center'>No orders found for '" + searchTerm + "'</td></tr>";
+                    updateStats([]);
+                    return;
+                }
+
+                updateStats(d.orders);
+
+                d.orders.forEach(o => {
+                    const status = o.status_id || o.status || 'Pending';
+                    const statusClass = getStatusBadgeClass(status);
+                    
+                    let row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${o.order_id}</td>
+                        <td>${o.order_date}</td>
+                        <td>${o.patient_name || '—'}</td>
+                        <td>${o.staff_name || '—'}</td>
+                        <td><span class="badge ${statusClass}">${status}</span></td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick="viewOrder('${o.order_id}')">View</button>
+                            ${status.toLowerCase() === 'pending' ? `
+                                <button class="btn btn-success btn-sm" onclick="openConfirm('${o.order_id}','approve')">Approve</button>
+                                <button class="btn btn-danger btn-sm" onclick="openConfirm('${o.order_id}','reject')">Reject</button>
+                            ` : ''}
+                            ${status.toLowerCase() === 'approved' ? `
+                                <button class="btn btn-info btn-sm" onclick="openConfirm('${o.order_id}','done')">Done</button>
+                            ` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+            });
+        } else {
+            // If search is empty, reload all orders
+            loadOrders();
+        }
+    });
+}

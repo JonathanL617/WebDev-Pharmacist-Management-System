@@ -26,11 +26,12 @@
             <p class="stat-label">Approved</p>
             <div class="stat-value" id="approvedOrders">0</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon"><i class="bi bi-check-all"></i></div>
-            <p class="stat-label">Done</p>
-            <div class="stat-value" id="doneOrders">0</div>
+                <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <p class="stat-label">Rejected</p>
+            <div class="stat-value" id="rejectedOrders">0</div>
         </div>
+
     </div>
     <h2>Incoming Pharmacy Orders</h2>
 
@@ -41,6 +42,17 @@
         <button class="btn btn-danger btn-sm" onclick="loadOrders('Rejected')">Rejected</button>
         <button class="btn btn-warning btn-sm text-dark" onclick="loadOrders('Pending')">Pending</button>
         <button class="btn btn-info btn-sm text-dark" onclick="loadOrders('Done')">Done</button>
+    </div>
+    <!-- Search Bar -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" id="searchOrders" class="form-control border-start-0 ps-0" placeholder="Search orders...">
+            </div>
+        </div>
     </div>
 
     <!-- Orders Table -->

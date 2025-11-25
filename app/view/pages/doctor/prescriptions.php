@@ -20,8 +20,8 @@
         </div>
         <div class="stat-card">
             <div class="stat-icon"><i class="bi bi-calendar-day"></i></div>
-            <p class="stat-label">Today</p>
-            <div class="stat-value" id="todayPrescriptions">0</div>
+            <p class="stat-label">Rejected</p>
+            <div class="stat-value" id="rejectedPrescriptions">0</div>
         </div>
     </div>
     <h2>Prescriptions</h2>
@@ -51,8 +51,7 @@
                     <th>Prescription ID</th>
                     <th>Date</th>
                     <th>Patient</th>
-                    <th>Medicine</th>
-                    <th>Dosage</th>
+                    <th>Doctor</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -97,6 +96,54 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- View Prescription Details Modal -->
+<div class="modal fade" id="viewPrescriptionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Prescription Details - <span id="viewOrderId"></span></h5>
+                
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Patient:</strong> <span id="viewPatientName"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Doctor:</strong> <span id="viewDoctorName"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Date:</strong> <span id="viewOrderDate"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Status:</strong> <span id="viewStatus"></span>
+                    </div>
+                </div>
+                
+                <h6 class="mt-4 mb-3">Medicines Prescribed</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Medicine Name</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="viewMedicineList">
+                            <!-- Medicine details will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
