@@ -74,8 +74,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Update stat counters
+    function updateCounters() {
+        const totalStaff = staffDataCache.length;
+        const activeStaff = staffDataCache.filter(s => s.staff_status === 'active').length;
+        const totalPatients = patientDataCache.length;
+        
+        // Get current admin ID from global variable
+        const currentAdminId = typeof loggedInUserId !== 'undefined' ? loggedInUserId : '';
+        const registeredByCurrent = staffDataCache.filter(s => s.registered_by === currentAdminId).length + 
+                                     patientDataCache.filter(p => p.registered_by === currentAdminId).length;
+        
+        document.getElementById('totalStaff').textContent = totalStaff;
+        document.getElementById('activeStaff').textContent = activeStaff;
+        document.getElementById('totalPatients').textContent = totalPatients;
+        document.getElementById('registeredByCurrent').textContent = registeredByCurrent;
+    }
+
     // Fetch and populate tables
     function loadTables() {
+        let staffLoaded = false;
+        let patientsLoaded = false;
+
         // Fetch staff data
         fetch('../../app/controller/AdminController.php?action=getStaff')
             .then(response => {
@@ -86,6 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.error) throw new Error(data.error);
                 staffDataCache = data;
                 populateStaffTable(data);
+                staffLoaded = true;
+                if (patientsLoaded) updateCounters();
             })
             .catch(error => {
                 console.error('Error fetching staff:', error);
@@ -102,6 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.error) throw new Error(data.error);
                 patientDataCache = data;
                 populatePatientTable(data);
+                patientsLoaded = true;
+                if (staffLoaded) updateCounters();
             })
             .catch(error => {
                 console.error('Error fetching patients:', error);

@@ -1,5 +1,5 @@
 <?php
-require_once '../config/config.php';
+require_once __DIR__ . '/../config/conn.php';
 
 class PharmacyModel {
     private $conn;
@@ -16,12 +16,12 @@ class PharmacyModel {
         return 'AP001';
     }
 
-    // Get order details
+        // Get order details with approval comments
     public function getOrderDetails($order_id){
         $stmt = $this->conn->prepare("
             SELECT o.order_id, o.order_date, o.status_id,
-                   p.patient_name, p.patient_phone, p.patient_address,
-                   COALESCE(s.staff_name, o.staff_id) AS staff_name
+                p.patient_name, p.patient_phone, p.patient_address,
+                COALESCE(s.staff_name, o.staff_id) AS staff_name
             FROM `order` o
             LEFT JOIN patient p ON o.patient_id=p.patient_id
             LEFT JOIN staff s ON o.staff_id=s.staff_id
@@ -32,9 +32,21 @@ class PharmacyModel {
         $order = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
+        // Get approval details (comments)
+        $stmt_approval = $this->conn->prepare("
+            SELECT approval_status, approval_comment, approval_date, approver_id
+            FROM order_approval 
+            WHERE order_id = ?
+            ORDER BY approval_date DESC
+        ");
+        $stmt_approval->bind_param("s", $order_id);
+        $stmt_approval->execute();
+        $approval_details = $stmt_approval->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt_approval->close();
+
         $stmt2 = $this->conn->prepare("
             SELECT od.medicine_id, od.medicine_quantity AS ordered_qty, od.medicine_price,
-                   m.medicine_name, m.medicine_quantity AS stock_qty
+                m.medicine_name, m.medicine_quantity AS stock_qty
             FROM order_details od
             JOIN medicine_info m ON od.medicine_id=m.medicine_id
             WHERE od.order_id=?
@@ -44,7 +56,7 @@ class PharmacyModel {
         $details = $stmt2->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt2->close();
 
-        return ['order'=>$order,'details'=>$details];
+        return ['order'=>$order, 'details'=>$details, 'approval_details'=>$approval_details];
     }
 
     // Get all orders with optional filter/search
@@ -88,59 +100,62 @@ class PharmacyModel {
     }
 
     // Approve, reject, or mark done
-    public function updateOrder($order_id,$action,$approver_id='pharm001',$comment=''){
-        $meds_stmt = $this->conn->prepare("
-            SELECT od.medicine_id, od.medicine_quantity AS ordered_qty, m.medicine_name, m.medicine_quantity AS stock_qty
-            FROM order_details od
-            JOIN medicine_info m ON od.medicine_id=m.medicine_id
-            WHERE od.order_id=?
-        ");
-        $meds_stmt->bind_param("s",$order_id);
-        $meds_stmt->execute();
-        $medicines=$meds_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $meds_stmt->close();
+public function updateOrder($order_id, $action, $approver_id, $comment = '') {
+    $meds_stmt = $this->conn->prepare("
+        SELECT od.medicine_id, od.medicine_quantity AS ordered_qty, m.medicine_name, m.medicine_quantity AS stock_qty
+        FROM order_details od
+        JOIN medicine_info m ON od.medicine_id = m.medicine_id
+        WHERE od.order_id = ?
+    ");
+    $meds_stmt->bind_param("s", $order_id);
+    $meds_stmt->execute();
+    $medicines = $meds_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $meds_stmt->close();
 
-        $status = $action==='approve'?'Approved':($action==='reject'?'Rejected':'Done');
+    $status = $action === 'approve' ? 'Approved' : ($action === 'reject' ? 'Rejected' : 'Done');
 
-        if($action==='approve'){
-            foreach($medicines as $med){
-                if($med['ordered_qty'] > $med['stock_qty'])
-                    return ['success'=>false,'msg'=>"Not enough stock for {$med['medicine_name']}"];
-            }
+    if ($action === 'approve') {
+        foreach ($medicines as $med) {
+            if ($med['ordered_qty'] > $med['stock_qty'])
+                return ['success' => false, 'msg' => "Not enough stock for {$med['medicine_name']}"];
         }
+    }
 
-        $this->conn->begin_transaction();
-        try{
-            if($action==='approve'){
-                foreach($medicines as $med){
-                    $stmt=$this->conn->prepare("UPDATE medicine_info SET medicine_quantity=medicine_quantity-? WHERE medicine_id=?");
-                    $stmt->bind_param("is",$med['ordered_qty'],$med['medicine_id']);
-                    $stmt->execute();
-                    $stmt->close();
-                }
+    $this->conn->begin_transaction();
+    try {
+        // ✅ CREATE APPROVAL RECORD FOR ALL ACTIONS (approve/reject/done)
+        $approval_id = $this->getNextApprovalID();
+        $approval_date = date("Y-m-d H:i:s");
+        $stmt = $this->conn->prepare("
+            INSERT INTO order_approval (approval_id, order_id, approver_id, approval_date, approval_status, approval_comment)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->bind_param("ssssss", $approval_id, $order_id, $approver_id, $approval_date, $status, $comment);
+        $stmt->execute();
+        $stmt->close();
 
-                $approval_id=$this->getNextApprovalID();
-                $approval_date=date("Y-m-d H:i:s");
-                $stmt=$this->conn->prepare("
-                    INSERT INTO order_approval (approval_id, order_id, approver_id, approval_date, approval_status, approval_comment)
-                    VALUES (?,?,?,?,?,?)
-                ");
-                $stmt->bind_param("ssssss",$approval_id,$order_id,$approver_id,$approval_date,$status,$comment);
+        // Stock reduction only for approved orders
+        if ($action === 'approve') {
+            foreach ($medicines as $med) {
+                $stmt = $this->conn->prepare("UPDATE medicine_info SET medicine_quantity = medicine_quantity - ? WHERE medicine_id = ?");
+                $stmt->bind_param("is", $med['ordered_qty'], $med['medicine_id']);
                 $stmt->execute();
                 $stmt->close();
             }
-
-            $stmt=$this->conn->prepare("UPDATE `order` SET status_id=? WHERE order_id=?");
-            $stmt->bind_param("ss",$status,$order_id);
-            $stmt->execute();
-            $stmt->close();
-
-            $this->conn->commit();
-            return ['success'=>true,'msg'=>"Order $order_id $status successfully"];
-        } catch(Exception $e){
-            $this->conn->rollback();
-            return ['success'=>false,'msg'=>$e->getMessage()];
         }
+
+        // Update order status (for all actions)
+        $stmt = $this->conn->prepare("UPDATE `order` SET status_id = ? WHERE order_id = ?");
+        $stmt->bind_param("ss", $status, $order_id);
+        $stmt->execute();
+        $stmt->close();
+
+        $this->conn->commit();
+        return ['success' => true, 'msg' => "Order $order_id $status successfully"];
+    } catch (Exception $e) {
+        $this->conn->rollback();
+        return ['success' => false, 'msg' => $e->getMessage()];
+    }
     }
     // Medicine Management Methods
     public function getNextMedicineID() {

@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Nov 20, 2025 at 03:59 AM
+-- Generation Time: Nov 26, 2025 at 05:35 PM
 -- Server version: 9.1.0
--- PHP Version: 8.3.14
+-- PHP Version: 8.4.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -29,12 +29,12 @@ SET time_zone = "+00:00";
 
 DROP TABLE IF EXISTS `admin`;
 CREATE TABLE IF NOT EXISTS `admin` (
-  `admin_id` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `admin_username` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `admin_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `admin_username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `admin_dob` date DEFAULT NULL,
-  `admin_password` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `admin_email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `registered_by` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `admin_password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `admin_email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `registered_by` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `admin_login_status` enum('active','inactive') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`admin_id`),
   KEY `registered_by` (`registered_by`)
@@ -45,7 +45,8 @@ CREATE TABLE IF NOT EXISTS `admin` (
 --
 
 INSERT INTO `admin` (`admin_id`, `admin_username`, `admin_dob`, `admin_password`, `admin_email`, `registered_by`, `admin_login_status`) VALUES
-('A001', 'admin1', '1995-04-10', 'adminpass', 'admin1@mail.com', 'SA001', 'active');
+('A001', 'admin1', '1995-04-10', '$argon2i$v=19$m=65536,t=4,p=1$L0w0RWZhTXIxREw2cG5zcA$ruSAS26tWxlHD0eYHlJcdomTVAboV4u+I71698u/Uic', 'admin1@mail.com', 'SA001', 'active'),
+('A002', 'admin2', '2025-11-21', '$argon2i$v=19$m=65536,t=4,p=1$N21qVWVsTTguNHBIdmtZRA$1TnIjHd0G8DNCuwmmnP4dMvdcl6M4nZa9z03FaVYUxE', 'admin2@gmail.com', 'SA001', 'active');
 
 -- --------------------------------------------------------
 
@@ -56,11 +57,11 @@ INSERT INTO `admin` (`admin_id`, `admin_username`, `admin_dob`, `admin_password`
 DROP TABLE IF EXISTS `login_session`;
 CREATE TABLE IF NOT EXISTS `login_session` (
   `session_id` int NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `role` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `role` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `login_time` datetime DEFAULT NULL,
   `logout_time` datetime DEFAULT NULL,
-  `status` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`session_id`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -73,11 +74,11 @@ CREATE TABLE IF NOT EXISTS `login_session` (
 
 DROP TABLE IF EXISTS `medicine_info`;
 CREATE TABLE IF NOT EXISTS `medicine_info` (
-  `medicine_id` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `medicine_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `medicine_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `medicine_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `medicine_price` decimal(10,2) DEFAULT NULL,
   `medicine_quantity` int DEFAULT NULL,
-  `medicine_description` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `medicine_description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`medicine_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -98,11 +99,11 @@ INSERT INTO `medicine_info` (`medicine_id`, `medicine_name`, `medicine_price`, `
 
 DROP TABLE IF EXISTS `order`;
 CREATE TABLE IF NOT EXISTS `order` (
-  `order_id` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `order_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `order_date` date DEFAULT NULL,
-  `patient_id` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `staff_id` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `status_id` enum('Pending','Approved','Rejected','Done') COLLATE utf8mb4_general_ci DEFAULT 'Pending',
+  `patient_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status_id` enum('Pending','Approved','Rejected','Done') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'Pending',
   PRIMARY KEY (`order_id`),
   KEY `patient_id` (`patient_id`),
   KEY `staff_id` (`staff_id`)
@@ -124,12 +125,12 @@ INSERT INTO `order` (`order_id`, `order_date`, `patient_id`, `staff_id`, `status
 
 DROP TABLE IF EXISTS `order_approval`;
 CREATE TABLE IF NOT EXISTS `order_approval` (
-  `approval_id` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `order_id` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `approver_id` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `approval_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `order_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `approver_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `approval_date` datetime DEFAULT NULL,
   `approval_status` enum('Approved','Rejected','Done','Pending') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `approval_comment` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `approval_comment` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`approval_id`),
   KEY `order_id` (`order_id`),
   KEY `approver_id` (`approver_id`)
@@ -159,9 +160,9 @@ INSERT INTO `order_approval` (`approval_id`, `order_id`, `approver_id`, `approva
 
 DROP TABLE IF EXISTS `order_details`;
 CREATE TABLE IF NOT EXISTS `order_details` (
-  `order_detail_id` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `order_id` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `medicine_id` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `order_detail_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `order_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `medicine_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `medicine_quantity` int DEFAULT NULL,
   `medicine_price` decimal(10,2) DEFAULT NULL,
   PRIMARY KEY (`order_detail_id`),
@@ -187,14 +188,14 @@ INSERT INTO `order_details` (`order_detail_id`, `order_id`, `medicine_id`, `medi
 
 DROP TABLE IF EXISTS `patient`;
 CREATE TABLE IF NOT EXISTS `patient` (
-  `patient_id` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `patient_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `patient_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `patient_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `patient_date_of_birth` date DEFAULT NULL,
-  `patient_phone` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `patient_gender` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `patient_email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `patient_address` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `registered_by` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `patient_phone` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `patient_gender` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `patient_email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `patient_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `registered_by` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`patient_id`),
   KEY `registered_by` (`registered_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -204,6 +205,7 @@ CREATE TABLE IF NOT EXISTS `patient` (
 --
 
 INSERT INTO `patient` (`patient_id`, `patient_name`, `patient_date_of_birth`, `patient_phone`, `patient_gender`, `patient_email`, `patient_address`, `registered_by`) VALUES
+('P001', 'sahur', '2025-11-05', '0123456789', 'Female', 'sahur@gmail.com', 'sadsd qe 2 1 12', 'A001'),
 ('PT001', 'John Doe', '1990-03-12', '0123456789', 'Male', 'john@example.com', '123 Main Street', 'A001'),
 ('PT002', 'Emily Tan', '1987-08-21', '0198765432', 'Female', 'emily@example.com', '88 Pine Road', 'A001');
 
@@ -215,16 +217,16 @@ INSERT INTO `patient` (`patient_id`, `patient_name`, `patient_date_of_birth`, `p
 
 DROP TABLE IF EXISTS `staff`;
 CREATE TABLE IF NOT EXISTS `staff` (
-  `staff_id` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `staff_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `staff_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `staff_dob` date DEFAULT NULL,
-  `staff_specialization` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `staff_role` enum('doctor','pharmacist') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `staff_phone` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `staff_email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `staff_password` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `registered_by` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `staff_status` enum('active','inactive','block') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_specialization` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_role` enum('doctor','pharmacist') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_phone` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `registered_by` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_status` enum('active','inactive','block') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`staff_id`),
   KEY `registered_by` (`registered_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -234,9 +236,12 @@ CREATE TABLE IF NOT EXISTS `staff` (
 --
 
 INSERT INTO `staff` (`staff_id`, `staff_name`, `staff_dob`, `staff_specialization`, `staff_role`, `staff_phone`, `staff_email`, `staff_password`, `registered_by`, `staff_status`) VALUES
-('D001', 'Dr. Lim Zhi Wei', '1980-02-12', 'General Medicine', 'doctor', '0182233445', 'lim@mail.com', 'doc123', 'A001', 'active'),
-('D002', 'Dr. Wong Jia Hui', '1977-09-30', 'Pediatrics', 'doctor', '0164455667', 'wong@mail.com', 'doc234', 'A001', 'active'),
-('P001', 'Pharmacist Lee', '1985-11-15', 'Pharmacy', 'pharmacist', '0179988776', 'lee@mail.com', 'pharm001', 'A001', 'active');
+('D001', 'Dr. Lim Zhi Wei', '1980-02-12', 'General Medicine', 'doctor', '0182233445', 'lim@mail.com', '$argon2i$v=19$m=65536,t=4,p=1$MU5nRzNsU2d4TDdURklJUA$j0WpeWC9KU45kYJwX3t+oloYtHb/D4hJMYpPkd6rmoI', 'A001', 'active'),
+('D002', 'Dr. Wong Jia Hui', '1977-09-30', 'Pediatrics', 'doctor', '0164455667', 'wong@mail.com', '$argon2i$v=19$m=65536,t=4,p=1$VVJDaVJLeFZna2I4QjNHdw$nuo4wVsyVHEyRwBZH6FRjzj91aqzhX5f6cJ+0reRGt4', 'A001', 'active'),
+('D003', 'asljdhasd', '2025-11-11', 'AKSJDas', 'doctor', '23194733424', 'docdoc@gmail.com', '$2y$12$7aos3a1abTSusx.qV70cVOnzgpUDjTL7T/KZ1oZM4zrVvfs.BM9Ue', 'A001', 'active'),
+('D004', 'asdakhdsgad', '2025-11-27', 'knee surgeon', 'doctor', '12837164917364', 'knee@gmail.com', '$2y$12$EZzLPdxN4KRnQkc63S6u/OoZcRTQRhrfXUWt1wjVLgg.ZjoZar83m', 'A001', ''),
+('P001', 'Pharmacist Lee', '1985-11-15', 'Pharmacy', 'pharmacist', '0179988776', 'lee@mail.com', '$argon2i$v=19$m=65536,t=4,p=1$OEROV0FxNFB5c25tVWVHdw$unzW+iBlREiXxo3Qr4UBxDRVF48hEXLpg5YzlmOnYjA', 'A001', 'active'),
+('P002', 'Tung', '2025-11-12', 'drug', 'pharmacist', '0123456789', 'tung@gmail.com', '$2y$12$Bo//NLkQBsbzmDuWODmcZuNuxN9GTXL7luHse4JGzqbdJM/kcaVE.', 'A002', 'active');
 
 -- --------------------------------------------------------
 
@@ -246,9 +251,10 @@ INSERT INTO `staff` (`staff_id`, `staff_name`, `staff_dob`, `staff_specializatio
 
 DROP TABLE IF EXISTS `super_admin`;
 CREATE TABLE IF NOT EXISTS `super_admin` (
-  `super_admin_id` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `super_admin_username` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `super_admin_password` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `super_admin_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `super_admin_username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `super_admin_email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `super_admin_password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`super_admin_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -256,8 +262,8 @@ CREATE TABLE IF NOT EXISTS `super_admin` (
 -- Dumping data for table `super_admin`
 --
 
-INSERT INTO `super_admin` (`super_admin_id`, `super_admin_username`, `super_admin_password`) VALUES
-('SA001', 'superadmin', 'password123');
+INSERT INTO `super_admin` (`super_admin_id`, `super_admin_username`, `super_admin_email`, `super_admin_password`) VALUES
+('SA001', 'superadmin', 'superadmin@mail.com', '$argon2i$v=19$m=65536,t=4,p=1$bGZXWWNscXNvLkRBVnJ3Ug$dkcWE6Z5LXPzqbmSzpiosJdZXfIXlwVLBLc3U/kw7jE');
 
 -- --------------------------------------------------------
 
@@ -268,10 +274,10 @@ INSERT INTO `super_admin` (`super_admin_id`, `super_admin_username`, `super_admi
 DROP TABLE IF EXISTS `user_approval`;
 CREATE TABLE IF NOT EXISTS `user_approval` (
   `approval_id` int NOT NULL AUTO_INCREMENT,
-  `approver_id` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `approved_user_id` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `approver_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `approved_user_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `approval_date` datetime DEFAULT NULL,
-  `status` enum('Pending','Approved','Rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` enum('pending','approved','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`approval_id`),
   KEY `approver_id` (`approver_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

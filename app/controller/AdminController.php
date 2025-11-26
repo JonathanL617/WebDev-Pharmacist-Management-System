@@ -1,4 +1,5 @@
 <?php
+session_start(); // Start session to access session variables
 require_once __DIR__ . "/../config/conn.php";
 
 class AdminController {
@@ -150,26 +151,36 @@ class AdminController {
             return;
         }
 
-        // Check for duplicates
+        // Check for duplicate email in staff table (already active)
         $check = $this->conn->prepare("SELECT staff_id FROM staff WHERE staff_email = ?");
         $check->bind_param('s', $data['staff_email']);
         $check->execute();
         if ($check->get_result()->num_rows > 0) {
-            echo json_encode(['success' => false, 'message' => 'Email already exists']);
+            echo json_encode(['success' => false, 'message' => 'Email already exists in active staff']);
+            $check->close();
             return;
         }
+        $check->close();
 
-        // Insert with Pending status
-        // Note: Password is not set here, it will be set by the user upon first login or by superadmin? 
-        // For now, let's assume a default password or handle it later. 
-        // Actually, the form doesn't have password. Let's set a default one or leave it empty if allowed.
-        // Looking at previous code, password is required. Let's set a default 'password123' hashed.
-        $defaultPass = password_hash('password123', PASSWORD_DEFAULT);
-        $status = 'Pending';
+        // Check for duplicate in pending_staff table
+        $checkPending = $this->conn->prepare("SELECT pending_id FROM pending_staff WHERE staff_email = ?");
+        $checkPending->bind_param('s', $data['staff_email']);
+        $checkPending->execute();
+        if ($checkPending->get_result()->num_rows > 0) {
+            echo json_encode(['success' => false, 'message' => 'A request with this email is already pending approval']);
+            $checkPending->close();
+            return;
+        }
+        $checkPending->close();
 
-        $stmt = $this->conn->prepare("INSERT INTO staff (staff_id, staff_name, staff_dob, staff_specialization, staff_role, staff_phone, staff_email, staff_status, staff_password, registered_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        // Insert into pending_staff table
+        $stmt = $this->conn->prepare("
+            INSERT INTO pending_staff 
+            (staff_id, staff_name, staff_dob, staff_specialization, staff_role, staff_phone, staff_email, registered_by) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ");
         
-        $stmt->bind_param('ssssssssss', 
+        $stmt->bind_param('ssssssss', 
             $data['staff_id'],
             $data['staff_name'],
             $data['staff_dob'],
@@ -177,16 +188,26 @@ class AdminController {
             $data['staff_role'],
             $data['staff_phone'],
             $data['staff_email'],
-            $status,
-            $defaultPass,
             $data['registered_by']
         );
         
         if ($stmt->execute()) {
-            echo json_encode(['success' => true]);
+            $pendingId = $stmt->insert_id;
+            
+            // Also insert into user_approval table to track approval status
+            $approvalStmt = $this->conn->prepare("
+                INSERT INTO user_approval (approved_user_id, status) 
+                VALUES (?, 'pending')
+            ");
+            $approvalStmt->bind_param('s', $data['staff_id']);
+            $approvalStmt->execute();
+            $approvalStmt->close();
+            
+            echo json_encode(['success' => true, 'message' => 'Staff request submitted for approval']);
         } else {
             echo json_encode(['success' => false, 'error' => $stmt->error]);
         }
+        $stmt->close();
     }
 }
 

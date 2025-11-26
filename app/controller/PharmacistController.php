@@ -3,7 +3,7 @@ session_start(); // required
 header('Content-Type: application/json');
 
 $loggedInUser = $_SESSION['user_id'] ?? 'P001'; // fallback
-require_once '../model/Pharmacist.php';
+require_once __DIR__ . '/../model/Pharmacist.php';
 
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? '';
