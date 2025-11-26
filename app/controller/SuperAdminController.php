@@ -1,13 +1,15 @@
 <?php
+    session_start(); // Start session to access session variables
     
-
     require_once __DIR__ . "/../config/conn.php";
     require_once __DIR__ . "/../model/Superadmin.php";
 
     class SuperAdminController {
         private $model;
+        private $conn;
 
         public function __construct($conn){
+            $this->conn = $conn;
             $this->model = new SuperAdminModel($conn);
         }
 
@@ -21,9 +23,21 @@
 
         public function createAdmin(){
             $data = $_POST;
-            $data['registered_by'] = $_SESSION['super_admin_id'] ?? 0;
+            $data['registered_by'] = $_SESSION['super_admin_id'] ?? '';
 
             echo json_encode($this->model->createAdmin($data));
+        }
+
+        public function generateAdminId() {
+            $result = $this->conn->query("SELECT admin_id FROM admin ORDER BY admin_id DESC LIMIT 1");
+            if ($result && $result->num_rows > 0) {
+                $lastID = $result->fetch_assoc()['admin_id'];
+                $num = (int)substr($lastID, 1) + 1;
+                $newID = 'A' . str_pad($num, 3, '0', STR_PAD_LEFT);
+            } else {
+                $newID = 'A002'; // Start from A002 since A001 already exists
+            }
+            echo json_encode(['id' => $newID]);
         }
 
         public function deleteAdmin(){
@@ -61,13 +75,14 @@
     $controller = new SuperAdminController($conn);
 
     match ($action) {
-        'getStats'      => $controller->getStats(),
-        'getAdmin'      => $controller->getAdmins(),
-        'create'        => $controller->createAdmin(),
-        'toggleStatus'  => $controller->toggleStatus(),
-        'delete'        => $controller->deleteAdmin(),
-        'getRequests'   => $controller->getRequests(),
-        'handleRequest' => $controller->handleRequest(),
-        default         => $controller->getStats()
+        'getStats'         => $controller->getStats(),
+        'getAdmin'         => $controller->getAdmins(),
+        'create'           => $controller->createAdmin(),
+        'generateAdminId'  => $controller->generateAdminId(),
+        'toggleStatus'     => $controller->toggleStatus(),
+        'delete'           => $controller->deleteAdmin(),
+        'getRequests'      => $controller->getRequests(),
+        'handleRequest'    => $controller->handleRequest(),
+        default            => $controller->getStats()
     };
 ?>

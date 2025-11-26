@@ -1,20 +1,33 @@
 function createAdminAccount() {
     const form = document.getElementById('createAdminForm');
-    const formData = new FormData(form);
-
-    fetch('../../app/controller/SuperAdminController.php?action=create', {
-        method: 'POST',
-        body: formData
-    })
+    
+    // First, get a generated admin ID
+    fetch('../../app/controller/SuperAdminController.php?action=generateAdminId')
+        .then(r => r.json())
+        .then(idData => {
+            const formData = new FormData(form);
+            formData.append('admin_id', idData.id);
+            
+            return fetch('../../app/controller/SuperAdminController.php?action=create', {
+                method: 'POST',
+                body: formData
+            });
+        })
         .then(r => r.json())
         .then(res => {
             if (res.success) {
                 loadAdminAccounts();
+                updateCounters();
                 bootstrap.Modal.getInstance(document.getElementById('createAdminModal')).hide();
                 form.reset();
+                alert('Admin account created successfully!');
             } else {
-                alert(res.message);
+                alert(res.message || 'Failed to create admin account');
             }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            alert('An error occurred while creating the admin account');
         });
 }
 
@@ -71,6 +84,7 @@ function toggleAdminStatus(adminId, currentStatus) {
         .then(data => {
             if (data.success) {
                 loadAdminAccounts();
+                updateCounters();
             }
         });
 }

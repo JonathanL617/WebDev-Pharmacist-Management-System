@@ -6,7 +6,7 @@ function loadRequests() {
     const tbody = document.getElementById('requestsTableBody');
     tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Loading requests...</td></tr>';
 
-    fetch('../../controller/SuperAdminController.php?action=getRequests')
+    fetch('../../app/controller/SuperAdminController.php?action=getRequests')
         .then(response => response.json())
         .then(data => {
             tbody.innerHTML = '';
@@ -31,10 +31,10 @@ function loadRequests() {
                     <td>${request.requester_name || request.registered_by}</td>
                     <td>${request.staff_dob}</td> <!-- Using DOB as placeholder for request date if no created_at -->
                     <td class="text-end pe-4">
-                        <button class="btn btn-sm btn-success me-2" onclick="handleRequest('${request.staff_id}', 'Active')">
+                        <button class="btn btn-sm btn-success me-2" onclick="handleRequest('${request.staff_id}', 'approved')">
                             <i class="bi bi-check-lg"></i> Approve
                         </button>
-                        <button class="btn btn-sm btn-danger" onclick="handleRequest('${request.staff_id}', 'Rejected')">
+                        <button class="btn btn-sm btn-danger" onclick="handleRequest('${request.staff_id}', 'rejected')">
                             <i class="bi bi-x-lg"></i> Reject
                         </button>
                     </td>
@@ -49,11 +49,11 @@ function loadRequests() {
 }
 
 function handleRequest(staffId, status) {
-    if (!confirm(`Are you sure you want to ${status === 'Active' ? 'APPROVE' : 'REJECT'} this request?`)) {
+    if (!confirm(`Are you sure you want to ${status === 'approved' ? 'APPROVE' : 'REJECT'} this request?`)) {
         return;
     }
 
-    fetch('../../controller/SuperAdminController.php?action=handleRequest', {
+    fetch('../../app/controller/SuperAdminController.php?action=handleRequest', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

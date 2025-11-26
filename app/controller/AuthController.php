@@ -25,15 +25,35 @@ class AuthController {
             $row = $userModel->getUserByEmail($email);
 
             if ($row && isPasswordCorrect($password, $row['user_password'])) {
+                // Check if account is active
+                if (strtolower($row['user_status']) !== 'active') {
+                    throw new Exception('Your account is ' . htmlspecialchars($row['user_status']) . '. Please contact your administrator.');
+                }
+
                 // Start session if not already started
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
                 session_regenerate_id(true); // Prevent session fixation
 
+                // Set generic session variables
                 $_SESSION['user_id'] = $row['user_id'];
                 $_SESSION['user_email'] = $row['user_email'];
                 $_SESSION['user_role'] = $row['user_role'];
+
+                // Set role-specific session variables for controllers
+                switch ($row['user_role']) {
+                    case 'superadmin':
+                        $_SESSION['super_admin_id'] = $row['user_id'];
+                        break;
+                    case 'admin':
+                        $_SESSION['admin_id'] = $row['user_id'];
+                        break;
+                    case 'doctor':
+                    case 'pharmacist':
+                        $_SESSION['staff_id'] = $row['user_id'];
+                        break;
+                }
 
                 // Handle "Remember Me" with cookies
                 if (isset($_POST['remember'])) {

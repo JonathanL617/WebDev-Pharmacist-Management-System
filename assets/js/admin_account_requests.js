@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
     roleSelect.addEventListener('change', function () {
         const role = this.value;
         if (role) {
-            fetch(`../../controller/AdminController.php?action=generateStaffId&role=${role}`)
+            fetch(`../../app/controller/AdminController.php?action=generateStaffId&role=${role}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.id) {
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
             data.registered_by = loggedInUserId;
         }
 
-        fetch('../../controller/AdminController.php?action=createStaffRequest', {
+        fetch('../../app/controller/AdminController.php?action=createStaffRequest', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

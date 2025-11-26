@@ -103,14 +103,14 @@
                         <div class="mb-3">
                             <label for="patient_email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="patient_email" required>
-                        </div>
+                </div>
                         <div class="mb-3">
                             <label for="patient_address" class="form-label">Address</label>
                             <textarea class="form-control" id="patient_address" rows="3" required></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="registered_by" class="form-label">Registered By</label>
-                            <input type="text" class="form-control" id="registered_by" value="SA001" readonly>
+                            <input type="text" class="form-control" id="registered_by" value="<?php echo $_SESSION['admin_id'] ?? ''; ?>" readonly>
                         </div>
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Register</button>

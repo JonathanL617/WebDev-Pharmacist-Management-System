@@ -3,13 +3,13 @@
     session_start();
     require_once '../config/config.php';
     
-    /*
+    
     if(!isset($_SESSION['user_id'])){
         header('Location:' . BASE_URL . '/app/view/login_page.php');
         exit();
     }
-    */
-   $userRole = $_SESSION['user_role'] ?? 'admin'; // Default to admin if not set for testing
+    
+   $userRole = $_SESSION['user_role']; // Default to admin if not set for testing
 
     //$userRole = $_SESSION['user_role'] ?? 'pharmacist'; // Default to pharmacist if not set for testing
     //$staff_id = $_SESSION['staff_id'] ?? 'P001'; // Use session or fallback
@@ -58,9 +58,9 @@
         <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/manage_accounts.css">
     </head>
 
-        <!-- ⚠️ IMPORTANT-->
-        <body data-staff-id="<?php echo $staff_id; ?>">
-        <!-- ⚠️ IMPORTANT: This data attribute is used by JavaScript to get staff ID -->
+        <!-- IMPORTANT-->
+        <body <?php if (isset($staff_id)) echo 'data-staff-id="' . htmlspecialchars($staff_id) . '"'; ?>>
+        <!-- IMPORTANT: This data attribute is used by JavaScript to get staff ID -->
 
         <!-- navigation bar -->
         <nav class="nav-container">
@@ -161,8 +161,16 @@
         <script src="<?php echo BASE_URL; ?>/assets/js/main.js"></script>
     <!-- Global Variables -->
     <script>
-        const loggedInUserId = "<?php echo $_SESSION['user_id'] ?? ''; ?>";
-        const loggedInUserRole = "<?php echo $userRole; ?>";
+        const loggedInUserId = "<?php 
+            // Use role-specific ID for registered_by fields
+            echo match($_SESSION['user_role'] ?? '') {
+                'superadmin' => $_SESSION['super_admin_id'] ?? '',
+                'admin' => $_SESSION['admin_id'] ?? '',
+                'doctor', 'pharmacist' => $_SESSION['staff_id'] ?? '',
+                default => $_SESSION['user_id'] ?? ''
+            };
+        ?>";
+        const loggedInUserRole = "<?php echo $_SESSION['user_role'] ?? ''; ?>";
     </script>
 
     <!-- Page Specific Scripts -->
@@ -171,10 +179,13 @@
             'manage_accounts' => ['manageAccount.js'],
             'manage_users' => ['admin_manage_user.js'],
             'register_patients' => ['admin_register_patients.js'],
+            'admin_requests' => ['superadmin_requests.js'],
+            'account_requests' => ['admin_account_requests.js'],
             'stock_management' => ['pharmacist_stock_management.js'],
             'prescription_queue' => ['prescription_queue.js'],
             'patient_records' => ['doctor_patient_records.js'],
             'prescriptions' => ['doctor_prescriptions.js'],
+            'API' => ['API.js'],
             // Add other pages as needed
         ];
 

@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const dob = new Date(formData.patient_date_of_birth);
                 const today = new Date();
-                today.setHours(0, 0, 0, 0); // Real today
+                today.setHours(0, 0, 0, 0);
                 if (dob > today) {
                     errors.push('Date of Birth cannot be in the future.');
                 }
@@ -98,13 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!formData.patient_address || formData.patient_address.length > 255) {
                 errors.push('Address is required and must be ≤ 255 characters.');
             }
-            if (formData.registered_by !== 'SA001') {
-                errors.push('Registered by must be SA001.');
+            // Changed: Accept any admin ID, not just SA001
+            if (!formData.registered_by || formData.registered_by.trim() === '') {
+                errors.push('Registered by field is required. Please refresh the page.');
             }
 
             if (errors.length > 0) {
-                // Assuming there is an error container, if not create alert
-                // The original code had formErrors, let's assume it exists or use alert
                 if (formErrors) {
                     formErrors.style.display = 'block';
                     formErrors.innerHTML = errors.join('<br>');
@@ -134,7 +133,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         loadPatients();
                         patientForm.reset();
                         generatePatientId();
-                        document.getElementById('registered_by').value = 'SA001';
+                        // Restore the admin ID from session
+                        if (typeof loggedInUserId !== 'undefined') {
+                            document.getElementById('registered_by').value = loggedInUserId;
+                        }
 
                         // Close modal
                         const modal = bootstrap.Modal.getInstance(document.getElementById('registerPatientModal'));
