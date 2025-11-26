@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Nov 26, 2025 at 05:35 PM
+-- Generation Time: Nov 26, 2025 at 06:28 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.4.0
 
@@ -212,6 +212,30 @@ INSERT INTO `patient` (`patient_id`, `patient_name`, `patient_date_of_birth`, `p
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `pending_staff`
+--
+
+DROP TABLE IF EXISTS `pending_staff`;
+CREATE TABLE IF NOT EXISTS `pending_staff` (
+  `pending_id` int NOT NULL AUTO_INCREMENT,
+  `staff_id` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `staff_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_dob` date DEFAULT NULL,
+  `staff_specialization` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_role` enum('doctor','pharmacist') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_phone` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `staff_email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `registered_by` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`pending_id`),
+  UNIQUE KEY `staff_id` (`staff_id`),
+  UNIQUE KEY `staff_email` (`staff_email`),
+  KEY `registered_by` (`registered_by`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `staff`
 --
 
@@ -238,10 +262,12 @@ CREATE TABLE IF NOT EXISTS `staff` (
 INSERT INTO `staff` (`staff_id`, `staff_name`, `staff_dob`, `staff_specialization`, `staff_role`, `staff_phone`, `staff_email`, `staff_password`, `registered_by`, `staff_status`) VALUES
 ('D001', 'Dr. Lim Zhi Wei', '1980-02-12', 'General Medicine', 'doctor', '0182233445', 'lim@mail.com', '$argon2i$v=19$m=65536,t=4,p=1$MU5nRzNsU2d4TDdURklJUA$j0WpeWC9KU45kYJwX3t+oloYtHb/D4hJMYpPkd6rmoI', 'A001', 'active'),
 ('D002', 'Dr. Wong Jia Hui', '1977-09-30', 'Pediatrics', 'doctor', '0164455667', 'wong@mail.com', '$argon2i$v=19$m=65536,t=4,p=1$VVJDaVJLeFZna2I4QjNHdw$nuo4wVsyVHEyRwBZH6FRjzj91aqzhX5f6cJ+0reRGt4', 'A001', 'active'),
-('D003', 'asljdhasd', '2025-11-11', 'AKSJDas', 'doctor', '23194733424', 'docdoc@gmail.com', '$2y$12$7aos3a1abTSusx.qV70cVOnzgpUDjTL7T/KZ1oZM4zrVvfs.BM9Ue', 'A001', 'active'),
+('D003', 'asljdhasd', '2025-11-11', 'AKSJDas', 'doctor', '23194733424', 'docdoc@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$QkpBbldjZDZmR1VKVDZoQg$etvT2dEgOL0IzL7L9Y4dZh9rEIc2jxkggqr3IxoISck', 'A001', 'active'),
 ('D004', 'asdakhdsgad', '2025-11-27', 'knee surgeon', 'doctor', '12837164917364', 'knee@gmail.com', '$2y$12$EZzLPdxN4KRnQkc63S6u/OoZcRTQRhrfXUWt1wjVLgg.ZjoZar83m', 'A001', ''),
-('P001', 'Pharmacist Lee', '1985-11-15', 'Pharmacy', 'pharmacist', '0179988776', 'lee@mail.com', '$argon2i$v=19$m=65536,t=4,p=1$OEROV0FxNFB5c25tVWVHdw$unzW+iBlREiXxo3Qr4UBxDRVF48hEXLpg5YzlmOnYjA', 'A001', 'active'),
-('P002', 'Tung', '2025-11-12', 'drug', 'pharmacist', '0123456789', 'tung@gmail.com', '$2y$12$Bo//NLkQBsbzmDuWODmcZuNuxN9GTXL7luHse4JGzqbdJM/kcaVE.', 'A002', 'active');
+('D005', 'jajaja', '2025-11-27', 'jajaja', 'doctor', '1908371934', 'jajaja@gmail.com', '$2y$12$mY/cw7i55MCy4HPdVacSOu3NAGguWboLTucM/LC3ysDW3tbeUaYS2', 'A001', ''),
+('P001', 'Pharmacist Lee', '1985-11-15', 'Pharmacy', 'pharmacist', '0179988776', 'lee@mail.com', '$argon2i$v=19$m=65536,t=4,p=1$SlRVNnVYczZCcnBLSnluRg$4523W4mEVQgLNuaMIXzN9s7KEWPdBCxGGWm7uele05g', 'A001', 'active'),
+('P002', 'Tung', '2025-11-12', 'drug', 'pharmacist', '0123456789', 'tung@gmail.com', '$2y$12$Bo//NLkQBsbzmDuWODmcZuNuxN9GTXL7luHse4JGzqbdJM/kcaVE.', 'A002', 'active'),
+('P003', 'asdad', '2025-11-11', 'asdad', 'pharmacist', '1231231231', 'dadada@gmail.com', '$2y$12$UQPntr47SO6uNAG.LobhIe5z8R8UZkF7e01we2d7HQ9xyJbote49K', 'A002', 'active');
 
 -- --------------------------------------------------------
 
@@ -280,7 +306,14 @@ CREATE TABLE IF NOT EXISTS `user_approval` (
   `status` enum('pending','approved','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`approval_id`),
   KEY `approver_id` (`approver_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_approval`
+--
+
+INSERT INTO `user_approval` (`approval_id`, `approver_id`, `approved_user_id`, `approval_date`, `status`) VALUES
+(1, 'SA001', 'P003', '2025-11-27 02:12:59', 'approved');
 
 --
 -- Constraints for dumped tables
