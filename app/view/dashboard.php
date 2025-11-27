@@ -10,6 +10,7 @@
     }
     
    $userRole = $_SESSION['user_role']; // Default to admin if not set for testing
+   $staff_id = $_SESSION['staff_id'] ?? null;
 
     //$userRole = $_SESSION['user_role'] ?? 'pharmacist'; // Default to pharmacist if not set for testing
     //$staff_id = $_SESSION['staff_id'] ?? 'P001'; // Use session or fallback
