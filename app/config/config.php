@@ -1,9 +1,9 @@
 <?php
     //database config
-    define('DB_HOST', 'sql100.infinityfree.com');
-    define('DB_USER', 'if0_40527409');
-    define('DB_PASS', 'L8OHvfANpQ7mu');
-    define('DB_NAME', 'if0_40527409_pharmacy_management');
+    define('DB_HOST', 'localhost');
+    define('DB_USER', 'root');
+    define('DB_PASS', '');
+    define('DB_NAME', 'pharmacy_management_system');
 
     //app config
     define('BASE_URL', 'http://localhost/WebDev-Pharmacist-Management-System');
